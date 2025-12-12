@@ -314,40 +314,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <option value="4">4+</option>
                         </select>
                     </div>
-                    <div class="button-input-group">
-                        <label>Lit CAR Indicator:</label>
-                        <select class="button-select" id="button-car-${moduleId}">
-                            <option value="">-- Select --</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </div>
-                    <div class="button-input-group">
-                        <label>Lit FRK Indicator:</label>
-                        <select class="button-select" id="button-frk-${moduleId}">
-                            <option value="">-- Select --</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </div>
                 </div>
                 <div class="solution-box" id="button-solution-${moduleId}">
                     Select all button properties to see solution
-                </div>
-                <div class="strip-section" id="strip-section-${moduleId}" style="display: none;">
-                    <div class="strip-input-group">
-                        <label>Strip Color When Held:</label>
-                        <select class="button-select" id="button-strip-${moduleId}">
-                            <option value="">-- Select --</option>
-                            <option value="blue">Blue</option>
-                            <option value="white">White</option>
-                            <option value="yellow">Yellow</option>
-                            <option value="other">Other (Red/Green/etc)</option>
-                        </select>
-                    </div>
-                    <div class="solution-box" id="strip-solution-${moduleId}">
-                        Select strip color to see when to release
-                    </div>
                 </div>
             </div>
         `;
@@ -357,43 +326,38 @@ document.addEventListener('DOMContentLoaded', function() {
         const colorSelect = document.getElementById(`button-color-${moduleId}`);
         const textSelect = document.getElementById(`button-text-${moduleId}`);
         const batteriesSelect = document.getElementById(`button-batteries-${moduleId}`);
-        const carSelect = document.getElementById(`button-car-${moduleId}`);
-        const frkSelect = document.getElementById(`button-frk-${moduleId}`);
-        const stripSelect = document.getElementById(`button-strip-${moduleId}`);
         
-        const selects = [colorSelect, textSelect, batteriesSelect, carSelect, frkSelect];
+        const selects = [colorSelect, textSelect, batteriesSelect];
         
         selects.forEach(select => {
             select.addEventListener('change', () => solveButton(moduleId));
         });
-        
-        stripSelect.addEventListener('change', () => solveButtonStrip(moduleId));
     }
     
     function solveButton(moduleId) {
         const colorSelect = document.getElementById(`button-color-${moduleId}`);
         const textSelect = document.getElementById(`button-text-${moduleId}`);
         const batteriesSelect = document.getElementById(`button-batteries-${moduleId}`);
-        const carSelect = document.getElementById(`button-car-${moduleId}`);
-        const frkSelect = document.getElementById(`button-frk-${moduleId}`);
         const solutionBox = document.getElementById(`button-solution-${moduleId}`);
-        const stripSection = document.getElementById(`strip-section-${moduleId}`);
+        
+        const litCar = document.getElementById('lit-car');
+        const litFrk = document.getElementById('lit-frk');
         
         const color = colorSelect.value;
         const text = textSelect.value;
         const batteries = parseInt(batteriesSelect.value);
-        const hasCar = carSelect.value === 'yes';
-        const hasFrk = frkSelect.value === 'yes';
+        const carState = litCar.getAttribute('data-state');
+        const frkState = litFrk.getAttribute('data-state');
         
-        // Check if all fields are selected
-        if (!color || !text || batteriesSelect.value === '' || carSelect.value === '' || frkSelect.value === '') {
+        // Check if all required fields are selected
+        if (!color || !text || batteriesSelect.value === '') {
             solutionBox.textContent = 'Select all button properties to see solution';
             solutionBox.className = 'solution-box';
-            stripSection.style.display = 'none';
             return;
         }
         
         let action = null;
+        let needsInfo = null;
         
         // Rule 1: Blue button + "Abort"
         if (color === 'blue' && text === 'abort') {
@@ -404,74 +368,77 @@ document.addEventListener('DOMContentLoaded', function() {
             action = 'press';
         }
         // Rule 3: White button + lit CAR
-        else if (color === 'white' && hasCar) {
-            action = 'hold';
-        }
-        // Rule 4: More than 2 batteries + lit FRK
-        else if (batteries > 2 && hasFrk) {
-            action = 'press';
-        }
-        // Rule 5: Yellow button
-        else if (color === 'yellow') {
-            action = 'hold';
-        }
-        // Rule 6: Red button + "Hold"
-        else if (color === 'red' && text === 'hold') {
-            action = 'press';
-        }
-        // Rule 7: Default
-        else {
-            action = 'hold';
+        else if (color === 'white') {
+            if (carState === 'unknown') {
+                needsInfo = 'Need to know: Does the bomb have a lit CAR indicator?';
+            } else if (carState === 'true') {
+                action = 'hold';
+            }
         }
         
-        if (action === 'press') {
-            solutionBox.textContent = '👆 Press and immediately release';
+        // Only continue if we haven't found an action and don't need info
+        if (!action && !needsInfo) {
+            // Rule 4: More than 2 batteries + lit FRK
+            if (batteries > 2) {
+                if (frkState === 'unknown') {
+                    needsInfo = 'Need to know: Does the bomb have a lit FRK indicator?';
+                } else if (frkState === 'true') {
+                    action = 'press';
+                }
+            }
+        }
+        
+        // Only continue if we haven't found an action and don't need info
+        if (!action && !needsInfo) {
+            // Rule 5: Yellow button
+            if (color === 'yellow') {
+                action = 'hold';
+            }
+            // Rule 6: Red button + "Hold"
+            else if (color === 'red' && text === 'hold') {
+                action = 'press';
+            }
+            // Rule 7: Default
+            else {
+                action = 'hold';
+            }
+        }
+        
+        if (needsInfo) {
+            solutionBox.textContent = needsInfo;
+            solutionBox.className = 'solution-box';
+        } else if (action === 'press') {
+            solutionBox.innerHTML = '👆 <strong>Press and immediately release</strong>';
             solutionBox.className = 'solution-box solved';
-            stripSection.style.display = 'none';
         } else {
-            solutionBox.textContent = '✋ Hold the button down';
+            // Hold action - show strip instructions
+            solutionBox.innerHTML = `
+                <div style="margin-bottom: 10px;"><strong>✋ Hold the button down</strong></div>
+                <div style="font-size: 0.95em; line-height: 1.6;">
+                    <div style="background: #2196f3; color: white; padding: 5px 8px; margin: 3px 0; border-radius: 3px;">
+                        <strong>Blue strip:</strong> Release at <strong>4</strong>
+                    </div>
+                    <div style="background: #ffc107; color: #333; padding: 5px 8px; margin: 3px 0; border-radius: 3px;">
+                        <strong>Yellow strip:</strong> Release at <strong>5</strong>
+                    </div>
+                    <div style="background: #e0e0e0; color: #333; padding: 5px 8px; margin: 3px 0; border-radius: 3px;">
+                        <strong>White/Other strip:</strong> Release at <strong>1</strong>
+                    </div>
+                </div>
+            `;
             solutionBox.className = 'solution-box solved';
-            stripSection.style.display = 'block';
-            solveButtonStrip(moduleId);
         }
-    }
-    
-    function solveButtonStrip(moduleId) {
-        const stripSelect = document.getElementById(`button-strip-${moduleId}`);
-        const stripSolution = document.getElementById(`strip-solution-${moduleId}`);
-        
-        const stripColor = stripSelect.value;
-        
-        if (!stripColor) {
-            stripSolution.textContent = 'Select strip color to see when to release';
-            stripSolution.className = 'solution-box';
-            return;
-        }
-        
-        let releaseInstruction = '';
-        
-        if (stripColor === 'blue') {
-            releaseInstruction = 'Release when timer has a 4 in any position';
-        } else if (stripColor === 'white') {
-            releaseInstruction = 'Release when timer has a 1 in any position';
-        } else if (stripColor === 'yellow') {
-            releaseInstruction = 'Release when timer has a 5 in any position';
-        } else if (stripColor === 'other') {
-            releaseInstruction = 'Release when timer has a 1 in any position';
-        }
-        
-        stripSolution.textContent = `⏱️ ${releaseInstruction}`;
-        stripSolution.className = 'solution-box solved';
     }
     
     // Store bomb indicators state when they change
     const batteries = document.getElementById('batteries');
-
     const parallelPort = document.getElementById('parallel-port');
     const evenSerial = document.getElementById('even-serial');
     const serialVowel = document.getElementById('serial-vowel');
+    const litCar = document.getElementById('lit-car');
+    const litFrk = document.getElementById('lit-frk');
     
-    const indicators = [batteries, parallelPort, evenSerial, serialVowel];
+    const indicators = [batteries, parallelPort, evenSerial, serialVowel, litCar, litFrk];
     
     // Setup three-state checkbox behavior
     indicators.forEach(indicator => {
@@ -509,12 +476,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
+            // Re-solve any active Button modules when CAR or FRK state changes
+            if (this.id === 'lit-car' || this.id === 'lit-frk') {
+                document.querySelectorAll('[id^="button-solution-"]').forEach(solution => {
+                    const moduleId = solution.id.replace('button-solution-', '');
+                    const moduleCard = document.getElementById(`module-${moduleId}`);
+                    if (moduleCard && moduleCard.querySelector('h3').textContent === 'Button') {
+                        solveButton(moduleId);
+                    }
+                });
+            }
+            
             // Log the current state of all indicators
             console.log('Bomb indicators updated:', {
                 batteries: batteries.getAttribute('data-state'),
                 parallelPort: parallelPort.getAttribute('data-state'),
                 evenSerial: evenSerial.getAttribute('data-state'),
-                serialVowel: serialVowel.getAttribute('data-state')
+                serialVowel: serialVowel.getAttribute('data-state'),
+                litCar: litCar.getAttribute('data-state'),
+                litFrk: litFrk.getAttribute('data-state')
             });
         });
     });
