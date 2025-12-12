@@ -181,3 +181,89 @@ h1 {
     color: #666;
     font-style: italic;
 }
+
+/* Wires Module Styles */
+.wires-controls {
+    margin-bottom: 15px;
+}
+
+.wires-controls label {
+    display: inline-block;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.wire-count-select {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 0.95em;
+}
+
+.wires-list {
+    margin: 15px 0;
+}
+
+.wire-item {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+    padding: 8px;
+    background-color: white;
+    border-radius: 3px;
+    border: 1px solid #e0e0e0;
+}
+
+.wire-item label {
+    min-width: 60px;
+    font-weight: 500;
+    color: #555;
+}
+
+.wire-color-select {
+    flex: 1;
+    padding: 6px 10px;
+    border: 2px solid #ddd;
+    border-radius: 3px;
+    font-size: 0.95em;
+    cursor: pointer;
+    background-color: white;
+}
+
+.wire-color-select option[value="red"] {
+    color: #f44336;
+}
+
+.wire-color-select option[value="blue"] {
+    color: #2196f3;
+}
+
+.wire-color-select option[value="yellow"] {
+    color: #ffc107;
+}
+
+.wire-color-select option[value="white"] {
+    color: #666;
+}
+
+.wire-color-select option[value="black"] {
+    color: #000;
+}
+
+.solution-box {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #f5f5f5;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    color: #666;
+}
+
+.solution-box.solved {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+    color: #2e7d32;
+    font-size: 1.1em;
+}
