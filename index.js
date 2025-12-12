@@ -7,6 +7,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const modulesContainer = document.getElementById('modules-container');
     const moduleButtons = document.querySelectorAll('.module-btn');
     
+    // Strike counter functionality
+    const strikeCounter = document.getElementById('strikes');
+    if (strikeCounter) {
+        strikeCounter.addEventListener('click', function() {
+            const currentStrikes = parseInt(this.getAttribute('data-strikes') || '0');
+            const newStrikes = (currentStrikes + 1) % 3; // Cycle 0 -> 1 -> 2 -> 0
+            this.setAttribute('data-strikes', newStrikes);
+            this.querySelector('.strike-number').textContent = newStrikes;
+            
+            // Re-solve any active Simon Says modules when strikes change
+            document.querySelectorAll('[id^="simon-solution-"]').forEach(solution => {
+                const moduleId = solution.id.replace('simon-solution-', '');
+                const moduleCard = document.getElementById(`module-${moduleId}`);
+                if (moduleCard && moduleCard.querySelector('h3').textContent === 'Simon Says') {
+                    solveSimonSays(moduleId);
+                }
+            });
+        });
+    }
+    
     // Add module when button is clicked
     moduleButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -31,6 +51,10 @@ document.addEventListener('DOMContentLoaded', function() {
             moduleContent = createButtonModule(moduleCounter);
         } else if (moduleName === 'Passwords') {
             moduleContent = createPasswordsModule(moduleCounter);
+        } else if (moduleName === 'Sequential Wires') {
+            moduleContent = createSequentialWiresModule(moduleCounter);
+        } else if (moduleName === 'Simon Says') {
+            moduleContent = createSimonSaysModule(moduleCounter);
         } else {
             moduleContent = `
                 <button class="close-btn" onclick="removeModule(${moduleCounter})" title="Remove module">×</button>
@@ -51,6 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
             setupButtonModule(moduleCounter);
         } else if (moduleName === 'Passwords') {
             setupPasswordsModule(moduleCounter);
+        } else if (moduleName === 'Sequential Wires') {
+            setupSequentialWiresModule(moduleCounter);
+        } else if (moduleName === 'Simon Says') {
+            setupSimonSaysModule(moduleCounter);
         }
     }
     
@@ -486,7 +514,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const letters = input.value.toLowerCase().trim();
             if (letters) {
                 hasAnyInput = true;
-                positions.push(letters.split(''));
+                // Only apply constraint if we have 6 letters (all possible letters entered)
+                if (letters.length === 6) {
+                    positions.push(letters.split(''));
+                } else {
+                    positions.push(null); // Not enough info, treat as unknown
+                }
             } else {
                 positions.push(null); // No constraint for this position
             }
@@ -498,15 +531,35 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Find matching passwords
-        const matches = PASSWORD_LIST.filter(word => {
+        // Find matching passwords with partial match scoring
+        const matchesWithScore = PASSWORD_LIST.map(word => {
+            let score = 0;
+            let hardMatch = true;
+            
             for (let i = 0; i < 5; i++) {
-                if (positions[i] && !positions[i].includes(word[i])) {
-                    return false;
+                if (positions[i]) {
+                    // Hard constraint (6 letters entered)
+                    if (!positions[i].includes(word[i])) {
+                        hardMatch = false;
+                        break;
+                    }
+                    score += 10; // Bonus for matching hard constraint
+                } else {
+                    // Soft matching - check if any entered letters match
+                    const input = document.getElementById(`password-pos-${moduleId}-${i}`);
+                    const letters = input.value.toLowerCase().trim();
+                    if (letters && letters.includes(word[i])) {
+                        score += 1; // Small bonus for partial match
+                    }
                 }
             }
-            return true;
-        });
+            
+            return hardMatch ? { word, score } : null;
+        }).filter(x => x !== null);
+        
+        // Sort by score (descending)
+        matchesWithScore.sort((a, b) => b.score - a.score);
+        const matches = matchesWithScore.map(x => x.word);
         
         if (matches.length === 0) {
             solutionBox.textContent = '❌ No matching passwords found';
@@ -525,6 +578,153 @@ document.addEventListener('DOMContentLoaded', function() {
             solutionBox.innerHTML = html;
             solutionBox.className = 'solution-box';
         }
+    }
+    
+    // Sequential Wires Module Functions
+    const SEQUENTIAL_RULES = {
+        red: ['C', 'B', 'A', 'AC', 'B', 'AC', 'ABC', 'AB', 'B'],
+        blue: ['B', 'AC', 'B', 'A', 'B', 'BC', 'C', 'AC', 'A'],
+        black: ['ABC', 'AC', 'B', 'AC', 'B', 'BC', 'AB', 'C', 'C']
+    };
+    
+    function createSequentialWiresModule(moduleId) {
+        return `
+            <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
+            <h3>Sequential Wires</h3>
+            <div class="module-content">
+                <div class="seq-wire-add">
+                    <div class="seq-controls">
+                        <label>Add Wire:</label>
+                        <div class="seq-buttons">
+                            <button class="seq-color-btn seq-red" data-color="red">Red</button>
+                            <button class="seq-color-btn seq-blue" data-color="blue">Blue</button>
+                            <button class="seq-color-btn seq-black" data-color="black">Black</button>
+                        </div>
+                    </div>
+                    <div class="seq-connection">
+                        <label>Connected to:</label>
+                        <div class="seq-buttons">
+                            <button class="seq-conn-btn" data-conn="A">A</button>
+                            <button class="seq-conn-btn" data-conn="B">B</button>
+                            <button class="seq-conn-btn" data-conn="C">C</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="seq-wires-list" id="seq-wires-${moduleId}">
+                    <div class="no-wires-message">Add wires with their connections</div>
+                </div>
+                <button class="reset-seq-btn" id="reset-seq-${moduleId}">🔄 Reset All</button>
+            </div>
+        `;
+    }
+    
+    function setupSequentialWiresModule(moduleId) {
+        const wiresList = document.getElementById(`seq-wires-${moduleId}`);
+        const colorButtons = document.querySelectorAll(`#module-${moduleId} .seq-color-btn`);
+        const connButtons = document.querySelectorAll(`#module-${moduleId} .seq-conn-btn`);
+        const resetBtn = document.getElementById(`reset-seq-${moduleId}`);
+        
+        let wires = []; // Array of {color, connection}
+        let counts = { red: 0, blue: 0, black: 0 };
+        let selectedColor = null;
+        let selectedConnection = null;
+        
+        colorButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                colorButtons.forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedColor = this.getAttribute('data-color');
+                checkAndAddWire();
+            });
+        });
+        
+        connButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                connButtons.forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedConnection = this.getAttribute('data-conn');
+                checkAndAddWire();
+            });
+        });
+        
+        function checkAndAddWire() {
+            if (selectedColor && selectedConnection) {
+                addWire(selectedColor, selectedConnection);
+                // Clear selections
+                colorButtons.forEach(b => b.classList.remove('selected'));
+                connButtons.forEach(b => b.classList.remove('selected'));
+                selectedColor = null;
+                selectedConnection = null;
+            }
+        }
+        
+        function addWire(color, connection) {
+            const occurrence = counts[color] + 1;
+            const rule = SEQUENTIAL_RULES[color][counts[color]];
+            const shouldCut = rule.includes(connection);
+            
+            wires.push({ color, connection, occurrence, shouldCut });
+            counts[color]++;
+            updateWiresList();
+        }
+        
+        function removeWire(index) {
+            const wire = wires[index];
+            wires.splice(index, 1);
+            
+            // Recalculate counts and rules
+            counts = { red: 0, blue: 0, black: 0 };
+            wires.forEach((w, i) => {
+                w.occurrence = counts[w.color] + 1;
+                const rule = SEQUENTIAL_RULES[w.color][counts[w.color]];
+                w.shouldCut = rule.includes(w.connection);
+                counts[w.color]++;
+            });
+            
+            updateWiresList();
+        }
+        
+        function updateWiresList() {
+            if (wires.length === 0) {
+                wiresList.innerHTML = '<div class="no-wires-message">Add wires with their connections</div>';
+                return;
+            }
+            
+            wiresList.innerHTML = '';
+            wires.forEach((wire, index) => {
+                const wireDiv = document.createElement('div');
+                wireDiv.className = `seq-wire-item ${wire.shouldCut ? 'should-cut' : 'dont-cut'}`;
+                wireDiv.innerHTML = `
+                    <span class="seq-wire-number">#${index + 1}</span>
+                    <span class="seq-wire-color seq-${wire.color}">${wire.color.toUpperCase()}</span>
+                    <span class="seq-wire-conn">→ ${wire.connection}</span>
+                    <span class="seq-wire-occur">(${wire.occurrence}${getOrdinal(wire.occurrence)})</span>
+                    <span class="seq-wire-action">${wire.shouldCut ? '✂️ CUT' : '✋ LEAVE'}</span>
+                    <button class="remove-wire-btn" data-index="${index}">×</button>
+                `;
+                wiresList.appendChild(wireDiv);
+            });
+            
+            // Add click listeners to remove buttons
+            wiresList.querySelectorAll('.remove-wire-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    removeWire(index);
+                });
+            });
+        }
+        
+        function getOrdinal(n) {
+            const s = ['th', 'st', 'nd', 'rd'];
+            const v = n % 100;
+            return s[(v - 20) % 10] || s[v] || s[0];
+        }
+        
+        resetBtn.addEventListener('click', function() {
+            wires = [];
+            counts = { red: 0, blue: 0, black: 0 };
+            updateWiresList();
+        });
     }
     
     // Store bomb indicators state when they change
@@ -584,6 +784,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
+            // Re-solve any active Simon Says modules when serial vowel state changes
+            if (this.id === 'serial-vowel') {
+                document.querySelectorAll('[id^="simon-solution-"]').forEach(solution => {
+                    const moduleId = solution.id.replace('simon-solution-', '');
+                    const moduleCard = document.getElementById(`module-${moduleId}`);
+                    if (moduleCard && moduleCard.querySelector('h3').textContent === 'Simon Says') {
+                        solveSimonSays(moduleId);
+                    }
+                });
+            }
+            
             // Log the current state of all indicators
             console.log('Bomb indicators updated:', {
                 batteries: batteries.getAttribute('data-state'),
@@ -596,3 +807,123 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Simon Says Module Functions
+function createSimonSaysModule(moduleId) {
+    return `
+        <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
+        <h3>Simon Says</h3>
+        <div class="module-content">
+            <div class="simon-controls">
+                <p style="margin: 0 0 10px 0; font-size: 14px;">Click the colors as they flash:</p>
+                <div class="simon-color-buttons">
+                    <button class="simon-color-btn simon-red" data-color="red">Red</button>
+                    <button class="simon-color-btn simon-blue" data-color="blue">Blue</button>
+                    <button class="simon-color-btn simon-yellow" data-color="yellow">Yellow</button>
+                    <button class="simon-color-btn simon-green" data-color="green">Green</button>
+                </div>
+                <div class="simon-sequence" id="simon-sequence-${moduleId}">
+                    <strong>Sequence:</strong> <span class="sequence-display" id="simon-display-${moduleId}">None yet</span>
+                </div>
+                <div class="simon-solution" id="simon-solution-${moduleId}">
+                    <strong>Press:</strong> <span class="solution-text">Enter sequence above</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function setupSimonSaysModule(moduleId) {
+    const colorButtons = document.querySelectorAll(`#module-${moduleId} .simon-color-btn`);
+    let sequence = [];
+    
+    // Store sequence for this module
+    window[`simonSequence_${moduleId}`] = sequence;
+    
+    colorButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const color = this.getAttribute('data-color');
+            sequence.push(color);
+            updateSimonDisplay(moduleId);
+        });
+    });
+    
+    // Initial solve
+    solveSimonSays(moduleId);
+}
+
+function updateSimonDisplay(moduleId) {
+    const sequence = window[`simonSequence_${moduleId}`];
+    const display = document.getElementById(`simon-display-${moduleId}`);
+    
+    if (sequence.length === 0) {
+        display.textContent = 'None yet';
+        display.style.color = '#666';
+    } else {
+        // Display sequence with colored dots or text
+        const colorMap = {
+            'red': '🔴',
+            'blue': '🔵',
+            'yellow': '🟡',
+            'green': '🟢'
+        };
+        display.innerHTML = sequence.map(c => colorMap[c]).join(' ');
+    }
+    
+    solveSimonSays(moduleId);
+}
+
+function solveSimonSays(moduleId) {
+    const sequence = window[`simonSequence_${moduleId}`] || [];
+    const solutionDiv = document.getElementById(`simon-solution-${moduleId}`);
+    const solutionText = solutionDiv.querySelector('.solution-text');
+    
+    if (sequence.length === 0) {
+        solutionText.textContent = 'Enter sequence above';
+        solutionText.style.color = '#666';
+        return;
+    }
+    
+    // Get serial number vowel state
+    const serialVowel = document.getElementById('serial-vowel');
+    const hasVowel = serialVowel.getAttribute('data-state');
+    
+    // Get strikes
+    const strikesBtn = document.getElementById('strikes');
+    const strikes = parseInt(strikesBtn.getAttribute('data-strikes') || '0');
+    
+    // Define mapping tables
+    const mappingWithVowel = {
+        0: { red: 'blue', blue: 'red', yellow: 'green', green: 'yellow' },
+        1: { red: 'yellow', blue: 'green', yellow: 'blue', green: 'red' },
+        2: { red: 'green', blue: 'red', yellow: 'yellow', green: 'blue' }
+    };
+    
+    const mappingWithoutVowel = {
+        0: { red: 'blue', blue: 'yellow', yellow: 'green', green: 'red' },
+        1: { red: 'red', blue: 'blue', yellow: 'yellow', green: 'green' },
+        2: { red: 'yellow', blue: 'green', yellow: 'blue', green: 'red' }
+    };
+    
+    if (hasVowel === 'unknown') {
+        solutionText.innerHTML = '<span style="color: orange;">⚠️ Need to know: Does serial have vowel?</span>';
+        return;
+    }
+    
+    const mapping = hasVowel === 'true' ? mappingWithVowel[strikes] : mappingWithoutVowel[strikes];
+    
+    // Convert sequence to solution
+    const solution = sequence.map(color => mapping[color]);
+    
+    // Display solution with colored indicators
+    const colorMap = {
+        'red': '🔴',
+        'blue': '🔵',
+        'yellow': '🟡',
+        'green': '🟢'
+    };
+    
+    solutionText.innerHTML = solution.map(c => colorMap[c]).join(' ');
+    solutionText.style.color = '#000';
+}
+
