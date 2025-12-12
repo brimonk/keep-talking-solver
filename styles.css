@@ -1,0 +1,133 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #d32f2f;
+    margin-top: 0;
+}
+
+.bomb-indicators {
+    background-color: #fff3e0;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-left: 4px solid #ff9800;
+}
+
+.bomb-indicators h2 {
+    margin-top: 0;
+    color: #e65100;
+    font-size: 1.2em;
+}
+
+.indicator-item {
+    margin: 10px 0;
+}
+
+.indicator-item input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.indicator-item label {
+    cursor: pointer;
+    font-size: 1.05em;
+}
+
+.module-selector {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #e3f2fd;
+    border-radius: 5px;
+    border-left: 4px solid #2196f3;
+}
+
+.module-selector h2 {
+    margin-top: 0;
+    color: #1565c0;
+    font-size: 1.2em;
+}
+
+.module-selector select {
+    padding: 8px 12px;
+    font-size: 1em;
+    border: 2px solid #2196f3;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    min-width: 200px;
+}
+
+.module-selector button {
+    padding: 8px 16px;
+    font-size: 1em;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.module-selector button:hover {
+    background-color: #1976d2;
+}
+
+.modules-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.module-card {
+    background-color: #f9f9f9;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    position: relative;
+}
+
+.module-card h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.module-card .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.module-card .close-btn:hover {
+    background-color: #b71c1c;
+}
+
+.module-content {
+    color: #666;
+    font-style: italic;
+}
