@@ -374,3 +374,50 @@ h1 {
     color: #2e7d32;
     font-size: 1.1em;
 }
+
+/* Button Module Styles */
+.button-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.button-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.button-input-group label {
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9em;
+}
+
+.button-select {
+    padding: 6px 10px;
+    border: 2px solid #ddd;
+    border-radius: 3px;
+    font-size: 0.95em;
+    cursor: pointer;
+    background-color: white;
+}
+
+.strip-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px dashed #ddd;
+}
+
+.strip-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.strip-input-group label {
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9em;
+}
