@@ -57,6 +57,8 @@ document.addEventListener('DOMContentLoaded', function() {
             moduleContent = createSimonSaysModule(moduleCounter);
         } else if (moduleName === 'Memory') {
             moduleContent = createMemoryModule(moduleCounter);
+        } else if (moduleName === 'Morse Code') {
+            moduleContent = createMorseCodeModule(moduleCounter);
         } else {
             moduleContent = `
                 <button class="toggle-btn" onclick="toggleModule(${moduleCounter})" title="Minimize module">▲</button>
@@ -85,6 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
             setupSimonSaysModule(moduleCounter);
         } else if (moduleName === 'Memory') {
             setupMemoryModule(moduleCounter);
+        } else if (moduleName === 'Morse Code') {
+            setupMorseCodeModule(moduleCounter);
         }
     }
     
@@ -1208,3 +1212,170 @@ function updateMemoryHistory(moduleId) {
         ).join('');
     }
 }
+
+// Morse Code Module Functions
+const MORSE_CODE_MAP = {
+    '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E',
+    '..-.': 'F', '--.': 'G', '....': 'H', '..': 'I', '.---': 'J',
+    '-.-': 'K', '.-..': 'L', '--': 'M', '-.': 'N', '---': 'O',
+    '.--.': 'P', '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T',
+    '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X', '-.--': 'Y',
+    '--..': 'Z'
+};
+
+const MORSE_WORDS = {
+    'shell': '3.505',
+    'halls': '3.515',
+    'slick': '3.522',
+    'trick': '3.532',
+    'boxes': '3.535',
+    'leaks': '3.542',
+    'strobe': '3.545',
+    'bistro': '3.552',
+    'flick': '3.555',
+    'bombs': '3.565',
+    'break': '3.572',
+    'brick': '3.575',
+    'steak': '3.582',
+    'sting': '3.592',
+    'vector': '3.595',
+    'beats': '3.600'
+};
+
+function createMorseCodeModule(moduleId) {
+    return `
+        <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+        <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
+        <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
+        <h3>Morse Code</h3>
+        <div class="module-content">
+            <div class="morse-controls">
+                <div class="morse-input-section">
+                    <p style="margin: 0 0 10px 0;"><strong>Enter morse code for each letter:</strong></p>
+                    <div class="morse-input-buttons">
+                        <button class="morse-input-btn morse-dot">· DOT</button>
+                        <button class="morse-input-btn morse-dash">— DASH</button>
+                        <button class="morse-input-btn morse-space">SPACE</button>
+                        <button class="morse-input-btn morse-clear">CLEAR</button>
+                    </div>
+                </div>
+                <div class="morse-display" id="morse-display-${moduleId}">
+                    <div class="morse-raw"><strong>Morse:</strong> <span class="morse-raw-text"></span></div>
+                    <div class="morse-decoded"><strong>Word:</strong> <span class="morse-decoded-text">—</span></div>
+                </div>
+                <div class="morse-solution" id="morse-solution-${moduleId}">
+                    <strong>Frequency:</strong> <span class="solution-text">Enter morse code to decode</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function setupMorseCodeModule(moduleId) {
+    const dotBtn = document.querySelector(`#module-${moduleId} .morse-dot`);
+    const dashBtn = document.querySelector(`#module-${moduleId} .morse-dash`);
+    const spaceBtn = document.querySelector(`#module-${moduleId} .morse-space`);
+    const clearBtn = document.querySelector(`#module-${moduleId} .morse-clear`);
+    const rawText = document.querySelector(`#module-${moduleId} .morse-raw-text`);
+    const decodedText = document.querySelector(`#module-${moduleId} .morse-decoded-text`);
+    
+    // Initialize state
+    window[`morseState_${moduleId}`] = {
+        currentLetter: '',
+        letters: [],
+        morseInput: ''
+    };
+    
+    dotBtn.addEventListener('click', () => {
+        const state = window[`morseState_${moduleId}`];
+        state.currentLetter += '.';
+        state.morseInput += '.';
+        updateMorseDisplay(moduleId);
+    });
+    
+    dashBtn.addEventListener('click', () => {
+        const state = window[`morseState_${moduleId}`];
+        state.currentLetter += '-';
+        state.morseInput += '-';
+        updateMorseDisplay(moduleId);
+    });
+    
+    spaceBtn.addEventListener('click', () => {
+        const state = window[`morseState_${moduleId}`];
+        if (state.currentLetter) {
+            // Decode current letter
+            const letter = MORSE_CODE_MAP[state.currentLetter];
+            if (letter) {
+                state.letters.push(letter);
+                state.morseInput += ' ';
+            }
+            state.currentLetter = '';
+            updateMorseDisplay(moduleId);
+        }
+    });
+    
+    clearBtn.addEventListener('click', () => {
+        window[`morseState_${moduleId}`] = {
+            currentLetter: '',
+            letters: [],
+            morseInput: ''
+        };
+        updateMorseDisplay(moduleId);
+    });
+    
+    updateMorseDisplay(moduleId);
+}
+
+function updateMorseDisplay(moduleId) {
+    const state = window[`morseState_${moduleId}`];
+    const rawText = document.querySelector(`#module-${moduleId} .morse-raw-text`);
+    const decodedText = document.querySelector(`#module-${moduleId} .morse-decoded-text`);
+    const solutionDiv = document.getElementById(`morse-solution-${moduleId}`);
+    const solutionText = solutionDiv.querySelector('.solution-text');
+    
+    // Show morse input
+    let displayMorse = state.morseInput;
+    if (state.currentLetter) {
+        displayMorse += state.currentLetter + ' (?)';
+    }
+    rawText.textContent = displayMorse || '—';
+    
+    // Show decoded word
+    let word = state.letters.join('');
+    if (state.currentLetter) {
+        const possibleLetter = MORSE_CODE_MAP[state.currentLetter];
+        if (possibleLetter) {
+            word += possibleLetter + '?';
+        }
+    }
+    decodedText.textContent = word || '—';
+    
+    // Check if word matches
+    const finalWord = state.letters.join('').toLowerCase();
+    if (finalWord && MORSE_WORDS[finalWord]) {
+        solutionText.innerHTML = `<strong>${MORSE_WORDS[finalWord]} MHz</strong>`;
+        solutionText.style.color = '#000';
+        solutionDiv.style.backgroundColor = '#e8f5e9';
+        solutionDiv.style.borderColor = '#4caf50';
+    } else if (finalWord) {
+        // Check for partial matches
+        const matches = Object.keys(MORSE_WORDS).filter(w => w.startsWith(finalWord));
+        if (matches.length > 0) {
+            solutionText.textContent = `Possible: ${matches.join(', ')}`;
+            solutionText.style.color = '#666';
+            solutionDiv.style.backgroundColor = '#fff3cd';
+            solutionDiv.style.borderColor = '#ffc107';
+        } else {
+            solutionText.textContent = 'No match found';
+            solutionText.style.color = '#999';
+            solutionDiv.style.backgroundColor = '#f5f5f5';
+            solutionDiv.style.borderColor = '#ddd';
+        }
+    } else {
+        solutionText.textContent = 'Enter morse code to decode';
+        solutionText.style.color = '#666';
+        solutionDiv.style.backgroundColor = '#f5f5f5';
+        solutionDiv.style.borderColor = '#ddd';
+    }
+}
+

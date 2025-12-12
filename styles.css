@@ -1015,3 +1015,118 @@ h1 {
     background-color: #f57c00;
 }
 
+/* Morse Code Module */
+.morse-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.morse-input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.morse-input-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.morse-input-btn {
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    border: 2px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.morse-dot {
+    background-color: #2196f3;
+    color: white;
+    border-color: #1976d2;
+}
+
+.morse-dot:hover {
+    background-color: #1976d2;
+}
+
+.morse-dash {
+    background-color: #ff9800;
+    color: white;
+    border-color: #f57c00;
+}
+
+.morse-dash:hover {
+    background-color: #f57c00;
+}
+
+.morse-space {
+    background-color: #4caf50;
+    color: white;
+    border-color: #388e3c;
+}
+
+.morse-space:hover {
+    background-color: #388e3c;
+}
+
+.morse-clear {
+    background-color: #f44336;
+    color: white;
+    border-color: #d32f2f;
+}
+
+.morse-clear:hover {
+    background-color: #d32f2f;
+}
+
+.morse-input-btn:active {
+    transform: scale(0.95);
+}
+
+.morse-display {
+    padding: 12px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-family: monospace;
+}
+
+.morse-raw {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.morse-raw-text {
+    color: #333;
+    font-size: 16px;
+    letter-spacing: 2px;
+}
+
+.morse-decoded {
+    font-size: 14px;
+}
+
+.morse-decoded-text {
+    color: #2196f3;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.morse-solution {
+    padding: 12px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    border: 2px solid #ddd;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.morse-solution .solution-text {
+    margin-left: 8px;
+}
