@@ -201,6 +201,36 @@ h1 {
     cursor: pointer;
 }
 
+.add-wire-select option[value="red"] {
+    background-color: #f44336;
+    color: white;
+    font-weight: bold;
+}
+
+.add-wire-select option[value="blue"] {
+    background-color: #2196f3;
+    color: white;
+    font-weight: bold;
+}
+
+.add-wire-select option[value="yellow"] {
+    background-color: #ffc107;
+    color: #333;
+    font-weight: bold;
+}
+
+.add-wire-select option[value="white"] {
+    background-color: #e0e0e0;
+    color: #333;
+    font-weight: bold;
+}
+
+.add-wire-select option[value="black"] {
+    background-color: #212121;
+    color: white;
+    font-weight: bold;
+}
+
 .add-wire-select:disabled {
     opacity: 0.5;
     cursor: not-allowed;
