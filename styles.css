@@ -193,31 +193,108 @@ h1 {
     font-weight: bold;
 }
 
-.wire-count-select {
+.add-wire-select {
     padding: 5px 10px;
     border: 1px solid #ddd;
     border-radius: 3px;
     font-size: 0.95em;
+    cursor: pointer;
+}
+
+.add-wire-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .wires-list {
     margin: 15px 0;
 }
 
+.no-wires-message {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    background-color: #f9f9f9;
+    border: 2px dashed #ddd;
+    border-radius: 5px;
+}
+
 .wire-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin: 8px 0;
-    padding: 8px;
+    padding: 10px 12px;
     background-color: white;
     border-radius: 3px;
     border: 1px solid #e0e0e0;
 }
 
-.wire-item label {
+.wire-number {
     min-width: 60px;
     font-weight: 500;
     color: #555;
+}
+
+.wire-color-badge {
+    flex: 1;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    margin: 0 10px;
+}
+
+.wire-red {
+    background-color: #f44336;
+}
+
+.wire-blue {
+    background-color: #2196f3;
+}
+
+.wire-yellow {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.wire-white {
+    background-color: #fff;
+    color: #333;
+    border: 2px solid #999;
+}
+
+.wire-black {
+    background-color: #212121;
+}
+
+.remove-wire-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background-color: #f44336;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    transition: background-color 0.2s;
+}
+
+.remove-wire-btn:hover {
+    background-color: #d32f2f;
+}
+
+.wire-count-select {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 0.95em;
 }
 
 .wire-color-select {

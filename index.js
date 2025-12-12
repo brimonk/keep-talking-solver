@@ -64,83 +64,107 @@ document.addEventListener('DOMContentLoaded', function() {
             <h3>Wires</h3>
             <div class="module-content">
                 <div class="wires-controls">
-                    <label>Number of wires:</label>
-                    <select class="wire-count-select" id="wire-count-${moduleId}">
-                        <option value="3">3 wires</option>
-                        <option value="4">4 wires</option>
-                        <option value="5">5 wires</option>
-                        <option value="6">6 wires</option>
-                    </select>
-                </div>
-                <div class="wires-list" id="wires-list-${moduleId}">
-                    <!-- Wire selectors will be added here -->
-                </div>
-                <div class="solution-box" id="solution-${moduleId}">
-                    Select wire colors to see solution
-                </div>
-            </div>
-        `;
-    }
-    
-    function setupWiresModule(moduleId) {
-        const wireCountSelect = document.getElementById(`wire-count-${moduleId}`);
-        const wiresList = document.getElementById(`wires-list-${moduleId}`);
-        
-        function updateWiresList() {
-            const count = parseInt(wireCountSelect.value);
-            wiresList.innerHTML = '';
-            
-            for (let i = 1; i <= count; i++) {
-                const wireDiv = document.createElement('div');
-                wireDiv.className = 'wire-item';
-                wireDiv.innerHTML = `
-                    <label>Wire ${i}:</label>
-                    <select class="wire-color-select" data-wire="${i}">
-                        <option value="">--</option>
+                    <label>Add wire:</label>
+                    <select class="add-wire-select" id="add-wire-${moduleId}">
+                        <option value="">-- Select color --</option>
                         <option value="red">Red</option>
                         <option value="blue">Blue</option>
                         <option value="yellow">Yellow</option>
                         <option value="white">White</option>
                         <option value="black">Black</option>
                     </select>
-                `;
-                wiresList.appendChild(wireDiv);
+                </div>
+                <div class="wires-list" id="wires-list-${moduleId}">
+                    <div class="no-wires-message">Add wires using the dropdown above</div>
+                </div>
+                <div class="solution-box" id="solution-${moduleId}">
+                    Add 3-6 wires to see solution
+                </div>
+            </div>
+        `;
+    }
+    
+    function setupWiresModule(moduleId) {
+        const addWireSelect = document.getElementById(`add-wire-${moduleId}`);
+        const wiresList = document.getElementById(`wires-list-${moduleId}`);
+        let wires = []; // Array to store wire colors
+        
+        addWireSelect.addEventListener('change', function() {
+            const color = this.value;
+            if (color && wires.length < 6) {
+                addWire(color);
+                this.value = ''; // Reset dropdown
             }
-            
-            // Add change listeners to all wire selects
-            wiresList.querySelectorAll('.wire-color-select').forEach(select => {
-                select.addEventListener('change', () => solveWires(moduleId));
-            });
-            
+        });
+        
+        function addWire(color) {
+            wires.push(color);
+            updateWiresList();
             solveWires(moduleId);
         }
         
-        wireCountSelect.addEventListener('change', updateWiresList);
-        updateWiresList(); // Initialize with 3 wires
+        function removeWire(index) {
+            wires.splice(index, 1);
+            updateWiresList();
+            solveWires(moduleId);
+        }
+        
+        function updateWiresList() {
+            if (wires.length === 0) {
+                wiresList.innerHTML = '<div class="no-wires-message">Add wires using the dropdown above</div>';
+                return;
+            }
+            
+            wiresList.innerHTML = '';
+            wires.forEach((color, index) => {
+                const wireDiv = document.createElement('div');
+                wireDiv.className = 'wire-item';
+                wireDiv.innerHTML = `
+                    <span class="wire-number">Wire ${index + 1}:</span>
+                    <span class="wire-color-badge wire-${color}">${color.charAt(0).toUpperCase() + color.slice(1)}</span>
+                    <button class="remove-wire-btn" data-index="${index}">×</button>
+                `;
+                wiresList.appendChild(wireDiv);
+            });
+            
+            // Add click listeners to remove buttons
+            wiresList.querySelectorAll('.remove-wire-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    removeWire(index);
+                });
+            });
+            
+            // Enable/disable add wire select based on wire count
+            addWireSelect.disabled = wires.length >= 6;
+        }
+        
+        window[`getWires_${moduleId}`] = () => wires;
     }
     
     function solveWires(moduleId) {
-        const wireCountSelect = document.getElementById(`wire-count-${moduleId}`);
-        const wiresList = document.getElementById(`wires-list-${moduleId}`);
         const solutionBox = document.getElementById(`solution-${moduleId}`);
         const evenSerial = document.getElementById('even-serial');
         
-        const count = parseInt(wireCountSelect.value);
-        const wires = [];
+        const wires = window[`getWires_${moduleId}`]();
+        const count = wires.length;
         
-        // Get all wire colors
-        wiresList.querySelectorAll('.wire-color-select').forEach(select => {
-            wires.push(select.value);
-        });
-        
-        // Check if all wires are selected
-        if (wires.some(w => w === '')) {
-            solutionBox.textContent = 'Select all wire colors to see solution';
+        // Need at least 3 wires and at most 6
+        if (count < 3) {
+            solutionBox.textContent = `Add ${3 - count} more wire${3 - count > 1 ? 's' : ''} (need 3-6 total)`;
             solutionBox.className = 'solution-box';
             return;
         }
         
-        const serialIsOdd = evenSerial.getAttribute('data-state') === 'false';
+        if (count > 6) {
+            solutionBox.textContent = 'Too many wires! Maximum is 6.';
+            solutionBox.className = 'solution-box';
+            return;
+        }
+        
+        const serialState = evenSerial.getAttribute('data-state');
+        const serialIsOdd = serialState === 'false';
+        const serialIsUnknown = serialState === 'unknown';
         let wireToCut = null;
         
         // Count wire colors
@@ -165,8 +189,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 wireToCut = 3;
             }
         } else if (count === 4) {
-            if (redCount > 1 && serialIsOdd) {
-                wireToCut = wires.lastIndexOf('red') + 1;
+            if (redCount > 1) {
+                if (serialIsUnknown) {
+                    solutionBox.textContent = 'Need to know: Is the last digit of the serial number odd?';
+                    solutionBox.className = 'solution-box';
+                    return;
+                }
+                if (serialIsOdd) {
+                    wireToCut = wires.lastIndexOf('red') + 1;
+                } else if (lastWire === 'yellow' && redCount === 0) {
+                    wireToCut = 1;
+                } else if (blueCount === 1) {
+                    wireToCut = 1;
+                } else if (yellowCount > 1) {
+                    wireToCut = 4;
+                } else {
+                    wireToCut = 2;
+                }
             } else if (lastWire === 'yellow' && redCount === 0) {
                 wireToCut = 1;
             } else if (blueCount === 1) {
@@ -177,8 +216,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 wireToCut = 2;
             }
         } else if (count === 5) {
-            if (lastWire === 'black' && serialIsOdd) {
-                wireToCut = 4;
+            if (lastWire === 'black') {
+                if (serialIsUnknown) {
+                    solutionBox.textContent = 'Need to know: Is the last digit of the serial number odd?';
+                    solutionBox.className = 'solution-box';
+                    return;
+                }
+                if (serialIsOdd) {
+                    wireToCut = 4;
+                } else if (redCount === 1 && yellowCount > 1) {
+                    wireToCut = 1;
+                } else if (blackCount === 0) {
+                    wireToCut = 2;
+                } else {
+                    wireToCut = 1;
+                }
             } else if (redCount === 1 && yellowCount > 1) {
                 wireToCut = 1;
             } else if (blackCount === 0) {
@@ -187,8 +239,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 wireToCut = 1;
             }
         } else if (count === 6) {
-            if (yellowCount === 0 && serialIsOdd) {
-                wireToCut = 3;
+            if (yellowCount === 0) {
+                if (serialIsUnknown) {
+                    solutionBox.textContent = 'Need to know: Is the last digit of the serial number odd?';
+                    solutionBox.className = 'solution-box';
+                    return;
+                }
+                if (serialIsOdd) {
+                    wireToCut = 3;
+                } else if (yellowCount === 1 && whiteCount > 1) {
+                    wireToCut = 4;
+                } else if (redCount === 0) {
+                    wireToCut = 6;
+                } else {
+                    wireToCut = 4;
+                }
             } else if (yellowCount === 1 && whiteCount > 1) {
                 wireToCut = 4;
             } else if (redCount === 0) {
