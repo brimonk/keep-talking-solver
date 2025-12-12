@@ -13,19 +13,27 @@
         <div class="bomb-indicators">
             <h2>Bomb Indicators</h2>
             <div class="indicator-item">
-                <input type="checkbox" id="batteries" name="batteries">
+                <button class="tristate-checkbox" id="batteries" data-state="unknown">
+                    <span class="checkbox-icon">?</span>
+                </button>
                 <label for="batteries">Bomb has 2+ batteries</label>
             </div>
             <div class="indicator-item">
-                <input type="checkbox" id="parallel-port" name="parallel-port">
+                <button class="tristate-checkbox" id="parallel-port" data-state="unknown">
+                    <span class="checkbox-icon">?</span>
+                </button>
                 <label for="parallel-port">Bomb has a parallel port</label>
             </div>
             <div class="indicator-item">
-                <input type="checkbox" id="even-serial" name="even-serial">
+                <button class="tristate-checkbox" id="even-serial" data-state="unknown">
+                    <span class="checkbox-icon">?</span>
+                </button>
                 <label for="even-serial">Serial number has an even digit at the end</label>
             </div>
             <div class="indicator-item">
-                <input type="checkbox" id="serial-vowel" name="serial-vowel">
+                <button class="tristate-checkbox" id="serial-vowel" data-state="unknown">
+                    <span class="checkbox-icon">?</span>
+                </button>
                 <label for="serial-vowel">Serial number has a vowel in it</label>
             </div>
         </div>

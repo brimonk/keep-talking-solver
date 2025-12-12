@@ -50,14 +50,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const evenSerial = document.getElementById('even-serial');
     const serialVowel = document.getElementById('serial-vowel');
     
-    [batteries, parallelPort, evenSerial, serialVowel].forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            // This could be used later for module-specific logic
+    const indicators = [batteries, parallelPort, evenSerial, serialVowel];
+    
+    // Setup three-state checkbox behavior
+    indicators.forEach(indicator => {
+        indicator.addEventListener('click', function() {
+            const currentState = this.getAttribute('data-state');
+            let newState, newIcon;
+            
+            // Cycle through states: unknown -> true -> false -> unknown
+            switch(currentState) {
+                case 'unknown':
+                    newState = 'true';
+                    newIcon = '✓';
+                    break;
+                case 'true':
+                    newState = 'false';
+                    newIcon = '✗';
+                    break;
+                case 'false':
+                    newState = 'unknown';
+                    newIcon = '?';
+                    break;
+            }
+            
+            this.setAttribute('data-state', newState);
+            this.querySelector('.checkbox-icon').textContent = newIcon;
+            
+            // Log the current state of all indicators
             console.log('Bomb indicators updated:', {
-                batteries: batteries.checked,
-                parallelPort: parallelPort.checked,
-                evenSerial: evenSerial.checked,
-                serialVowel: serialVowel.checked
+                batteries: batteries.getAttribute('data-state'),
+                parallelPort: parallelPort.getAttribute('data-state'),
+                evenSerial: evenSerial.getAttribute('data-state'),
+                serialVowel: serialVowel.getAttribute('data-state')
             });
         });
     });
