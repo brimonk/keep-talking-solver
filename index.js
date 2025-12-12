@@ -55,12 +55,16 @@ document.addEventListener('DOMContentLoaded', function() {
             moduleContent = createSequentialWiresModule(moduleCounter);
         } else if (moduleName === 'Simon Says') {
             moduleContent = createSimonSaysModule(moduleCounter);
+        } else if (moduleName === 'Memory') {
+            moduleContent = createMemoryModule(moduleCounter);
         } else {
             moduleContent = `
+                <button class="toggle-btn" onclick="toggleModule(${moduleCounter})" title="Minimize module">▲</button>
+                <button class="complete-btn" onclick="completeModule(${moduleCounter})" title="Mark as complete">✓</button>
                 <button class="close-btn" onclick="removeModule(${moduleCounter})" title="Remove module">×</button>
                 <h3>${moduleName}</h3>
                 <div class="module-content">
-                    Module not yet solved
+                    Module not yet implemented
                 </div>
             `;
         }
@@ -79,6 +83,8 @@ document.addEventListener('DOMContentLoaded', function() {
             setupSequentialWiresModule(moduleCounter);
         } else if (moduleName === 'Simon Says') {
             setupSimonSaysModule(moduleCounter);
+        } else if (moduleName === 'Memory') {
+            setupMemoryModule(moduleCounter);
         }
     }
     
@@ -90,9 +96,47 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
+    // Toggle module minimize/expand
+    window.toggleModule = function(moduleId) {
+        const moduleCard = document.getElementById(`module-${moduleId}`);
+        if (moduleCard) {
+            moduleCard.classList.toggle('minimized');
+            const toggleBtn = moduleCard.querySelector('.toggle-btn');
+            if (moduleCard.classList.contains('minimized')) {
+                toggleBtn.textContent = '▼';
+                toggleBtn.title = 'Expand module';
+            } else {
+                toggleBtn.textContent = '▲';
+                toggleBtn.title = 'Minimize module';
+            }
+        }
+    };
+    
+    // Mark module as complete
+    window.completeModule = function(moduleId) {
+        const moduleCard = document.getElementById(`module-${moduleId}`);
+        if (moduleCard) {
+            moduleCard.classList.toggle('completed');
+            const completeBtn = moduleCard.querySelector('.complete-btn');
+            if (moduleCard.classList.contains('completed')) {
+                completeBtn.textContent = '↺';
+                completeBtn.title = 'Mark as incomplete';
+                // Auto-minimize when completed
+                if (!moduleCard.classList.contains('minimized')) {
+                    toggleModule(moduleId);
+                }
+            } else {
+                completeBtn.textContent = '✓';
+                completeBtn.title = 'Mark as complete';
+            }
+        }
+    };
+    
     // Wires Module Functions
     function createWiresModule(moduleId) {
         return `
+            <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+            <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
             <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
             <h3>Wires</h3>
             <div class="module-content">
@@ -313,6 +357,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Button Module Functions
     function createButtonModule(moduleId) {
         return `
+            <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+            <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
             <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
             <h3>Button</h3>
             <div class="module-content">
@@ -475,6 +521,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createPasswordsModule(moduleId) {
         return `
+            <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+            <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
             <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
             <h3>Passwords</h3>
             <div class="module-content">
@@ -589,6 +637,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createSequentialWiresModule(moduleId) {
         return `
+            <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+            <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
             <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
             <h3>Sequential Wires</h3>
             <div class="module-content">
@@ -811,6 +861,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // Simon Says Module Functions
 function createSimonSaysModule(moduleId) {
     return `
+        <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+        <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
         <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
         <h3>Simon Says</h3>
         <div class="module-content">
@@ -927,3 +979,232 @@ function solveSimonSays(moduleId) {
     solutionText.style.color = '#000';
 }
 
+// Memory Module Functions
+function createMemoryModule(moduleId) {
+    return `
+        <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+        <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
+        <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
+        <h3>Memory</h3>
+        <div class="module-content">
+            <div class="memory-controls">
+                <div class="memory-stage-info">
+                    <strong>Stage:</strong> <span id="memory-stage-${moduleId}">1</span> of 5
+                </div>
+                <div class="memory-display-section">
+                    <p style="margin: 0 0 10px 0;"><strong>Display shows:</strong></p>
+                    <div class="memory-display-buttons">
+                        <button class="memory-display-btn" data-value="1">1</button>
+                        <button class="memory-display-btn" data-value="2">2</button>
+                        <button class="memory-display-btn" data-value="3">3</button>
+                        <button class="memory-display-btn" data-value="4">4</button>
+                    </div>
+                </div>
+                <div class="memory-solution" id="memory-solution-${moduleId}">
+                    <strong>Press:</strong> <span class="solution-text">Select display number</span>
+                </div>
+                <div class="memory-input-section" id="memory-input-${moduleId}" style="display:none;">
+                    <p id="memory-input-label-${moduleId}" style="margin: 0 0 10px 0; font-weight: bold;">Enter the label on that button:</p>
+                    <div class="memory-input-buttons">
+                        <button class="memory-input-btn" data-value="1">1</button>
+                        <button class="memory-input-btn" data-value="2">2</button>
+                        <button class="memory-input-btn" data-value="3">3</button>
+                        <button class="memory-input-btn" data-value="4">4</button>
+                    </div>
+                </div>
+                <div class="memory-history" id="memory-history-${moduleId}">
+                    <strong>History:</strong>
+                    <div class="history-list"></div>
+                </div>
+                <button class="memory-reset-btn" id="memory-reset-${moduleId}">Reset Module</button>
+            </div>
+        </div>
+    `;
+}
+
+function setupMemoryModule(moduleId) {
+    const displayButtons = document.querySelectorAll(`#module-${moduleId} .memory-display-btn`);
+    const resetBtn = document.getElementById(`memory-reset-${moduleId}`);
+    const inputSection = document.getElementById(`memory-input-${moduleId}`);
+    const inputLabel = document.getElementById(`memory-input-label-${moduleId}`);
+    
+    // Initialize memory state for this module
+    window[`memoryState_${moduleId}`] = {
+        stage: 1,
+        history: [], // Will store {position, label} for each stage
+        waitingForInput: false,
+        currentInstruction: null
+    };
+    
+    // Display button listeners
+    displayButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const displayValue = parseInt(this.getAttribute('data-value'));
+            handleDisplayClick(moduleId, displayValue);
+        });
+    });
+    
+    // Input button listeners (added after display click)
+    // We'll set this up dynamically when input section is shown
+    
+    // Reset button
+    resetBtn.addEventListener('click', () => {
+        window[`memoryState_${moduleId}`] = {
+            stage: 1,
+            history: [],
+            waitingForInput: false,
+            currentInstruction: null
+        };
+        document.getElementById(`memory-stage-${moduleId}`).textContent = '1';
+        inputSection.style.display = 'none';
+        updateMemoryHistory(moduleId);
+        
+        const solutionDiv = document.getElementById(`memory-solution-${moduleId}`);
+        solutionDiv.querySelector('.solution-text').textContent = 'Select display number';
+        solutionDiv.querySelector('.solution-text').style.color = '#666';
+        
+        // Re-enable display buttons
+        displayButtons.forEach(btn => btn.disabled = false);
+    });
+    
+    updateMemoryHistory(moduleId);
+}
+
+function handleDisplayClick(moduleId, displayValue) {
+    const state = window[`memoryState_${moduleId}`];
+    const solutionDiv = document.getElementById(`memory-solution-${moduleId}`);
+    const solutionText = solutionDiv.querySelector('.solution-text');
+    const inputSection = document.getElementById(`memory-input-${moduleId}`);
+    const inputLabel = document.getElementById(`memory-input-label-${moduleId}`);
+    const inputValue = document.getElementById(`memory-input-value-${moduleId}`);
+    const stage = state.stage;
+    
+    let instruction = '';
+    let needsInput = false;
+    let inputPrompt = '';
+    
+    // Implement the memory rules for each stage
+    if (stage === 1) {
+        if (displayValue === 1) instruction = { type: 'position', value: 2 };
+        else if (displayValue === 2) instruction = { type: 'position', value: 2 };
+        else if (displayValue === 3) instruction = { type: 'position', value: 3 };
+        else if (displayValue === 4) instruction = { type: 'position', value: 4 };
+    } else if (stage === 2) {
+        if (displayValue === 1) instruction = { type: 'label', value: 4 };
+        else if (displayValue === 2) instruction = { type: 'position', value: state.history[0].position };
+        else if (displayValue === 3) instruction = { type: 'position', value: 1 };
+        else if (displayValue === 4) instruction = { type: 'position', value: state.history[0].position };
+    } else if (stage === 3) {
+        if (displayValue === 1) instruction = { type: 'label', value: state.history[1].label };
+        else if (displayValue === 2) instruction = { type: 'label', value: state.history[0].label };
+        else if (displayValue === 3) instruction = { type: 'position', value: 3 };
+        else if (displayValue === 4) instruction = { type: 'label', value: 4 };
+    } else if (stage === 4) {
+        if (displayValue === 1) instruction = { type: 'position', value: state.history[0].position };
+        else if (displayValue === 2) instruction = { type: 'position', value: 1 };
+        else if (displayValue === 3) instruction = { type: 'position', value: state.history[1].position };
+        else if (displayValue === 4) instruction = { type: 'position', value: state.history[1].position };
+    } else if (stage === 5) {
+        if (displayValue === 1) instruction = { type: 'label', value: state.history[0].label };
+        else if (displayValue === 2) instruction = { type: 'label', value: state.history[1].label };
+        else if (displayValue === 3) instruction = { type: 'label', value: state.history[3].label };
+        else if (displayValue === 4) instruction = { type: 'label', value: state.history[2].label };
+    }
+    
+    // Display the instruction
+    if (instruction.type === 'position') {
+        solutionText.innerHTML = `<strong>Position ${instruction.value}</strong>`;
+        solutionText.style.color = '#000';
+        needsInput = true;
+        inputPrompt = `Enter the label on button ${instruction.value}:`;
+        state.currentInstruction = { ...instruction, position: instruction.value };
+    } else if (instruction.type === 'label') {
+        solutionText.innerHTML = `<strong>Labeled "${instruction.value}"</strong>`;
+        solutionText.style.color = '#000';
+        needsInput = true;
+        inputPrompt = `Enter the position of button labeled "${instruction.value}":`;
+        state.currentInstruction = { ...instruction, label: instruction.value };
+    }
+    
+    // Show input if needed
+    if (needsInput) {
+        inputLabel.textContent = inputPrompt;
+        inputSection.style.display = 'block';
+        state.waitingForInput = true;
+        
+        // Set up input button listeners
+        const inputButtons = document.querySelectorAll(`#module-${moduleId} .memory-input-btn`);
+        inputButtons.forEach(btn => {
+            // Remove old listeners by cloning
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            newBtn.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                completeStage(moduleId, value);
+            });
+        });
+    }
+}
+
+function completeStage(moduleId, inputVal) {
+    const state = window[`memoryState_${moduleId}`];
+    const inputSection = document.getElementById(`memory-input-${moduleId}`);
+    const solutionDiv = document.getElementById(`memory-solution-${moduleId}`);
+    const solutionText = solutionDiv.querySelector('.solution-text');
+    
+    if (!state.waitingForInput || !state.currentInstruction) return;
+    
+    let position, label;
+    
+    if (state.currentInstruction.type === 'position') {
+        // We told them position, they give us label
+        position = state.currentInstruction.position;
+        label = inputVal;
+    } else {
+        // We told them label, they give us position
+        position = inputVal;
+        label = state.currentInstruction.label;
+    }
+    
+    // Save to history
+    state.history.push({ position, label });
+    
+    // Update history display
+    updateMemoryHistory(moduleId);
+    
+    // Hide input
+    inputSection.style.display = 'none';
+    state.waitingForInput = false;
+    state.currentInstruction = null;
+    
+    // Advance stage
+    state.stage++;
+    
+    if (state.stage > 5) {
+        // Module complete!
+        document.getElementById(`memory-stage-${moduleId}`).textContent = '✓ COMPLETE';
+        solutionText.innerHTML = '<span style="color: #4caf50; font-weight: bold;">✓ Module Disarmed!</span>';
+        
+        // Disable display buttons
+        const displayButtons = document.querySelectorAll(`#module-${moduleId} .memory-display-btn`);
+        displayButtons.forEach(btn => btn.disabled = true);
+    } else {
+        document.getElementById(`memory-stage-${moduleId}`).textContent = state.stage;
+        solutionText.textContent = 'Select display number';
+        solutionText.style.color = '#666';
+    }
+}
+
+function updateMemoryHistory(moduleId) {
+    const state = window[`memoryState_${moduleId}`];
+    const historyList = document.querySelector(`#memory-history-${moduleId} .history-list`);
+    
+    if (state.history.length === 0) {
+        historyList.innerHTML = '<em style="color: #999;">No stages completed yet</em>';
+    } else {
+        historyList.innerHTML = state.history.map((h, idx) => 
+            `<div class="history-item">Stage ${idx + 1}: Position ${h.position}, Label ${h.label}</div>`
+        ).join('');
+    }
+}
