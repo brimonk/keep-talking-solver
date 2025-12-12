@@ -48,14 +48,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const batteries = document.getElementById('batteries');
     const parallelPort = document.getElementById('parallel-port');
     const evenSerial = document.getElementById('even-serial');
+    const serialVowel = document.getElementById('serial-vowel');
     
-    [batteries, parallelPort, evenSerial].forEach(checkbox => {
+    [batteries, parallelPort, evenSerial, serialVowel].forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             // This could be used later for module-specific logic
             console.log('Bomb indicators updated:', {
                 batteries: batteries.checked,
                 parallelPort: parallelPort.checked,
-                evenSerial: evenSerial.checked
+                evenSerial: evenSerial.checked,
+                serialVowel: serialVowel.checked
             });
         });
     });
