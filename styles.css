@@ -190,6 +190,12 @@ h1 {
     transform: translateY(0);
 }
 
+.module-btn .not-implemented {
+    color: #d32f2f;
+    font-weight: bold;
+    margin-right: 2px;
+}
+
 .module-selector select {
     padding: 8px 12px;
     font-size: 1em;
