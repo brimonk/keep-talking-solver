@@ -28,14 +28,28 @@ h1 {
 
 .bomb-indicators h2 {
     margin-top: 0;
+    margin-bottom: 12px;
     color: #e65100;
     font-size: 1.2em;
 }
 
+.indicators-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .indicators-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 .indicator-item {
-    margin: 10px 0;
+    margin: 0;
     display: flex;
     align-items: center;
+    gap: 8px;
 }
 
 .tristate-checkbox {
@@ -95,27 +109,61 @@ h1 {
 
 .indicator-item label {
     cursor: pointer;
-    font-size: 1.05em;
+    font-size: 0.95em;
+    user-select: none;
+    white-space: nowrap;
 }
 
 .module-selector {
     margin-bottom: 20px;
     padding: 15px;
-    background-color: #e3f2fd;
+    background-color: #c2c6c9;
     border-radius: 5px;
-    border-left: 4px solid #2196f3;
+    border-left: 4px solid #414243;
 }
 
 .module-selector h2 {
     margin-top: 0;
-    color: #1565c0;
+    margin-bottom: 12px;
+    color: #414243;
     font-size: 1.2em;
+}
+
+.module-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+}
+
+.module-btn {
+    padding: 10px 12px;
+    font-size: 0.9em;
+    background-color: white;
+    color: #333;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.module-btn:hover {
+    background-color: #f5f5f5;
+    border-color: #454b50;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.module-btn:active {
+    transform: translateY(0);
 }
 
 .module-selector select {
     padding: 8px 12px;
     font-size: 1em;
-    border: 2px solid #2196f3;
+    border: 2px solid #454b50;
     border-radius: 4px;
     background-color: white;
     cursor: pointer;
@@ -125,7 +173,7 @@ h1 {
 .module-selector button {
     padding: 8px 16px;
     font-size: 1em;
-    background-color: #2196f3;
+    background-color: #454b50;
     color: white;
     border: none;
     border-radius: 4px;
@@ -184,13 +232,65 @@ h1 {
 
 /* Wires Module Styles */
 .wires-controls {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
-.wires-controls label {
-    display: inline-block;
-    margin-right: 10px;
+.color-picker-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.color-pick-btn {
+    width: 35px;
+    height: 35px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
     font-weight: bold;
+    font-size: 14px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.color-pick-btn:hover:not(:disabled) {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.color-pick-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.color-pick-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.color-pick-red {
+    background-color: #f44336;
+    color: white;
+}
+
+.color-pick-blue {
+    background-color: #2196f3;
+    color: white;
+}
+
+.color-pick-yellow {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.color-pick-white {
+    background-color: #fff;
+    color: #333;
+    border-color: #999;
+}
+
+.color-pick-black {
+    background-color: #212121;
+    color: white;
 }
 
 .add-wire-select {
@@ -261,12 +361,6 @@ h1 {
     border: 1px solid #e0e0e0;
 }
 
-.wire-number {
-    min-width: 60px;
-    font-weight: 500;
-    color: #555;
-}
-
 .wire-color-badge {
     flex: 1;
     padding: 6px 12px;
@@ -276,7 +370,7 @@ h1 {
     color: white;
     text-transform: uppercase;
     font-size: 0.9em;
-    margin: 0 10px;
+    margin-right: 10px;
 }
 
 .wire-red {

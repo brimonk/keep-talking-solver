@@ -4,18 +4,15 @@
 let moduleCounter = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
-    const moduleSelect = document.getElementById('module-select');
     const modulesContainer = document.getElementById('modules-container');
+    const moduleButtons = document.querySelectorAll('.module-btn');
     
-    // Add module when selected from dropdown
-    moduleSelect.addEventListener('change', function() {
-        const selectedModule = moduleSelect.value;
-        
-        if (selectedModule) {
-            addModule(selectedModule);
-            // Reset select to default
-            moduleSelect.value = '';
-        }
+    // Add module when button is clicked
+    moduleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const moduleName = this.getAttribute('data-module');
+            addModule(moduleName);
+        });
     });
     
     function addModule(moduleName) {
@@ -68,18 +65,16 @@ document.addEventListener('DOMContentLoaded', function() {
             <h3>Wires</h3>
             <div class="module-content">
                 <div class="wires-controls">
-                    <label>Add wire:</label>
-                    <select class="add-wire-select" id="add-wire-${moduleId}">
-                        <option value="">-- Select color --</option>
-                        <option value="red">Red</option>
-                        <option value="blue">Blue</option>
-                        <option value="yellow">Yellow</option>
-                        <option value="white">White</option>
-                        <option value="black">Black</option>
-                    </select>
+                    <div class="color-picker-buttons">
+                        <button class="color-pick-btn color-pick-red" data-color="red" title="Red">R</button>
+                        <button class="color-pick-btn color-pick-blue" data-color="blue" title="Blue">B</button>
+                        <button class="color-pick-btn color-pick-yellow" data-color="yellow" title="Yellow">Y</button>
+                        <button class="color-pick-btn color-pick-white" data-color="white" title="White">W</button>
+                        <button class="color-pick-btn color-pick-black" data-color="black" title="Black">K</button>
+                    </div>
                 </div>
                 <div class="wires-list" id="wires-list-${moduleId}">
-                    <div class="no-wires-message">Add wires using the dropdown above</div>
+                    <div class="no-wires-message">Add wires using the color buttons above</div>
                 </div>
                 <div class="solution-box" id="solution-${moduleId}">
                     Add 3-6 wires to see solution
@@ -89,16 +84,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function setupWiresModule(moduleId) {
-        const addWireSelect = document.getElementById(`add-wire-${moduleId}`);
         const wiresList = document.getElementById(`wires-list-${moduleId}`);
+        const colorButtons = document.querySelectorAll(`#module-${moduleId} .color-pick-btn`);
         let wires = []; // Array to store wire colors
         
-        addWireSelect.addEventListener('change', function() {
-            const color = this.value;
-            if (color && wires.length < 6) {
-                addWire(color);
-                this.value = ''; // Reset dropdown
-            }
+        colorButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const color = this.getAttribute('data-color');
+                if (wires.length < 6) {
+                    addWire(color);
+                }
+            });
         });
         
         function addWire(color) {
@@ -115,7 +111,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function updateWiresList() {
             if (wires.length === 0) {
-                wiresList.innerHTML = '<div class="no-wires-message">Add wires using the dropdown above</div>';
+                wiresList.innerHTML = '<div class="no-wires-message">Add wires using the color buttons above</div>';
+                updateColorButtons();
                 return;
             }
             
@@ -124,7 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const wireDiv = document.createElement('div');
                 wireDiv.className = 'wire-item';
                 wireDiv.innerHTML = `
-                    <span class="wire-number">Wire ${index + 1}:</span>
                     <span class="wire-color-badge wire-${color}">${color.charAt(0).toUpperCase() + color.slice(1)}</span>
                     <button class="remove-wire-btn" data-index="${index}">×</button>
                 `;
@@ -139,8 +135,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
             
-            // Enable/disable add wire select based on wire count
-            addWireSelect.disabled = wires.length >= 6;
+            updateColorButtons();
+        }
+        
+        function updateColorButtons() {
+            // Disable all color buttons if we have 6 wires
+            colorButtons.forEach(button => {
+                button.disabled = wires.length >= 6;
+            });
         }
         
         window[`getWires_${moduleId}`] = () => wires;

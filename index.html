@@ -11,62 +11,63 @@
         <h1>🎮 Keep Talking and Nobody Explodes - Helper</h1>
         
         <div class="bomb-indicators">
-            <h2>Bomb Indicators</h2>
-            <div class="indicator-item">
-                <button class="tristate-checkbox" id="batteries" data-state="unknown">
-                    <span class="checkbox-icon">?</span>
-                </button>
-                <label for="batteries">Bomb has 2+ batteries</label>
-            </div>
-            <div class="indicator-item">
-                <button class="tristate-checkbox" id="parallel-port" data-state="unknown">
-                    <span class="checkbox-icon">?</span>
-                </button>
-                <label for="parallel-port">Bomb has a parallel port</label>
-            </div>
-            <div class="indicator-item">
-                <button class="tristate-checkbox" id="even-serial" data-state="unknown">
-                    <span class="checkbox-icon">?</span>
-                </button>
-                <label for="even-serial">Serial number has an even digit at the end</label>
-            </div>
-            <div class="indicator-item">
-                <button class="tristate-checkbox" id="serial-vowel" data-state="unknown">
-                    <span class="checkbox-icon">?</span>
-                </button>
-                <label for="serial-vowel">Serial number has a vowel in it</label>
-            </div>
-            <div class="indicator-item">
-                <button class="tristate-checkbox" id="lit-car" data-state="unknown">
-                    <span class="checkbox-icon">?</span>
-                </button>
-                <label for="lit-car">Bomb has a lit CAR indicator</label>
-            </div>
-            <div class="indicator-item">
-                <button class="tristate-checkbox" id="lit-frk" data-state="unknown">
-                    <span class="checkbox-icon">?</span>
-                </button>
-                <label for="lit-frk">Bomb has a lit FRK indicator</label>
+            <h2>💣 Bomb Info</h2>
+            <div class="indicators-grid">
+                <div class="indicator-item">
+                    <button class="tristate-checkbox" id="batteries" data-state="unknown">
+                        <span class="checkbox-icon">?</span>
+                    </button>
+                    <label for="batteries">🔋 2+ Batteries</label>
+                </div>
+                <div class="indicator-item">
+                    <button class="tristate-checkbox" id="parallel-port" data-state="unknown">
+                        <span class="checkbox-icon">?</span>
+                    </button>
+                    <label for="parallel-port">🔌 Parallel Port</label>
+                </div>
+                <div class="indicator-item">
+                    <button class="tristate-checkbox" id="even-serial" data-state="unknown">
+                        <span class="checkbox-icon">?</span>
+                    </button>
+                    <label for="even-serial">🔢 Serial Ends Even</label>
+                </div>
+                <div class="indicator-item">
+                    <button class="tristate-checkbox" id="serial-vowel" data-state="unknown">
+                        <span class="checkbox-icon">?</span>
+                    </button>
+                    <label for="serial-vowel">🔤 Serial Has Vowel</label>
+                </div>
+                <div class="indicator-item">
+                    <button class="tristate-checkbox" id="lit-car" data-state="unknown">
+                        <span class="checkbox-icon">?</span>
+                    </button>
+                    <label for="lit-car">💡 Lit CAR</label>
+                </div>
+                <div class="indicator-item">
+                    <button class="tristate-checkbox" id="lit-frk" data-state="unknown">
+                        <span class="checkbox-icon">?</span>
+                    </button>
+                    <label for="lit-frk">💡 Lit FRK</label>
+                </div>
             </div>
         </div>
         
         <div class="module-selector">
-            <h2>Add Module</h2>
-            <select id="module-select">
-                <option value="">-- Select a module --</option>
-                <option value="Wires">Wires</option>
-                <option value="Button">Button</option>
-                <option value="Keypads">Keypads</option>
-                <option value="Simon Says">Simon Says</option>
-                <option value="Who's on First">Who's on First</option>
-                <option value="Memory">Memory</option>
-                <option value="Morse Code">Morse Code</option>
-                <option value="Complicated Wires">Complicated Wires</option>
-                <option value="Sequential Wires">Sequential Wires</option>
-                <option value="Mazes">Mazes</option>
-                <option value="Passwords">Passwords</option>
-                <option value="Needy Knob">Needy Knob</option>
-            </select>
+            <h2>➕ Add Module</h2>
+            <div class="module-buttons">
+                <button class="module-btn" data-module="Wires">🔴 Wires</button>
+                <button class="module-btn" data-module="Button">🔘 Button</button>
+                <button class="module-btn" data-module="Keypads">⌨️ Keypads</button>
+                <button class="module-btn" data-module="Simon Says">🎵 Simon Says</button>
+                <button class="module-btn" data-module="Who's on First">❓ Who's on First</button>
+                <button class="module-btn" data-module="Memory">🧠 Memory</button>
+                <button class="module-btn" data-module="Morse Code">📡 Morse Code</button>
+                <button class="module-btn" data-module="Complicated Wires">🔀 Complicated</button>
+                <button class="module-btn" data-module="Sequential Wires">➡️ Sequential</button>
+                <button class="module-btn" data-module="Mazes">🌀 Mazes</button>
+                <button class="module-btn" data-module="Passwords">🔐 Passwords</button>
+                <button class="module-btn" data-module="Needy Knob">🎚️ Needy Knob</button>
+            </div>
         </div>
         
         <div class="modules-container" id="modules-container">
