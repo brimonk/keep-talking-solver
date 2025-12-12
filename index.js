@@ -5,24 +5,16 @@ let moduleCounter = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     const moduleSelect = document.getElementById('module-select');
-    const addModuleBtn = document.getElementById('add-module-btn');
     const modulesContainer = document.getElementById('modules-container');
     
-    // Add module when button is clicked
-    addModuleBtn.addEventListener('click', function() {
+    // Add module when selected from dropdown
+    moduleSelect.addEventListener('change', function() {
         const selectedModule = moduleSelect.value;
         
         if (selectedModule) {
             addModule(selectedModule);
             // Reset select to default
             moduleSelect.value = '';
-        }
-    });
-    
-    // Also allow adding module by pressing Enter
-    moduleSelect.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            addModuleBtn.click();
         }
     });
     
