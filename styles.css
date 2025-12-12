@@ -515,3 +515,42 @@ h1 {
     color: #555;
     font-size: 0.9em;
 }
+
+/* Passwords Module Styles */
+.password-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.password-column {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.password-column label {
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9em;
+    min-width: 80px;
+}
+
+.password-letters {
+    flex: 1;
+    padding: 8px;
+    border: 2px solid #ddd;
+    border-radius: 3px;
+    font-size: 1em;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.password-letters:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}

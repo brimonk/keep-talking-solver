@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', function() {
             moduleContent = createWiresModule(moduleCounter);
         } else if (moduleName === 'Button') {
             moduleContent = createButtonModule(moduleCounter);
+        } else if (moduleName === 'Passwords') {
+            moduleContent = createPasswordsModule(moduleCounter);
         } else {
             moduleContent = `
                 <button class="close-btn" onclick="removeModule(${moduleCounter})" title="Remove module">×</button>
@@ -47,6 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
             setupWiresModule(moduleCounter);
         } else if (moduleName === 'Button') {
             setupButtonModule(moduleCounter);
+        } else if (moduleName === 'Passwords') {
+            setupPasswordsModule(moduleCounter);
         }
     }
     
@@ -429,6 +433,97 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
             solutionBox.className = 'solution-box solved';
+        }
+    }
+    
+    // Passwords Module Functions
+    const PASSWORD_LIST = [
+        'about', 'after', 'again', 'below', 'could', 'every', 'first', 'found',
+        'great', 'house', 'large', 'learn', 'never', 'other', 'place', 'plant',
+        'point', 'right', 'small', 'sound', 'spell', 'still', 'study', 'their',
+        'there', 'these', 'thing', 'think', 'three', 'water', 'where', 'which',
+        'world', 'would', 'write'
+    ];
+    
+    function createPasswordsModule(moduleId) {
+        return `
+            <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
+            <h3>Passwords</h3>
+            <div class="module-content">
+                <div class="password-inputs">
+                    ${[0, 1, 2, 3, 4].map(pos => `
+                        <div class="password-column">
+                            <label>Position ${pos + 1}:</label>
+                            <input type="text" class="password-letters" id="password-pos-${moduleId}-${pos}" 
+                                   placeholder="ABC..." maxlength="10" data-pos="${pos}">
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="solution-box" id="password-solution-${moduleId}">
+                    Enter possible letters for each position
+                </div>
+            </div>
+        `;
+    }
+    
+    function setupPasswordsModule(moduleId) {
+        const inputs = [];
+        for (let i = 0; i < 5; i++) {
+            const input = document.getElementById(`password-pos-${moduleId}-${i}`);
+            inputs.push(input);
+            input.addEventListener('input', () => solvePassword(moduleId));
+        }
+    }
+    
+    function solvePassword(moduleId) {
+        const solutionBox = document.getElementById(`password-solution-${moduleId}`);
+        const positions = [];
+        let hasAnyInput = false;
+        
+        // Get letters for each position
+        for (let i = 0; i < 5; i++) {
+            const input = document.getElementById(`password-pos-${moduleId}-${i}`);
+            const letters = input.value.toLowerCase().trim();
+            if (letters) {
+                hasAnyInput = true;
+                positions.push(letters.split(''));
+            } else {
+                positions.push(null); // No constraint for this position
+            }
+        }
+        
+        if (!hasAnyInput) {
+            solutionBox.textContent = 'Enter possible letters for each position';
+            solutionBox.className = 'solution-box';
+            return;
+        }
+        
+        // Find matching passwords
+        const matches = PASSWORD_LIST.filter(word => {
+            for (let i = 0; i < 5; i++) {
+                if (positions[i] && !positions[i].includes(word[i])) {
+                    return false;
+                }
+            }
+            return true;
+        });
+        
+        if (matches.length === 0) {
+            solutionBox.textContent = '❌ No matching passwords found';
+            solutionBox.className = 'solution-box';
+        } else if (matches.length === 1) {
+            solutionBox.innerHTML = `<strong>✅ Password:</strong> <span style="font-size: 1.3em; letter-spacing: 2px;">${matches[0].toUpperCase()}</span>`;
+            solutionBox.className = 'solution-box solved';
+        } else {
+            const displayMatches = matches.slice(0, 3);
+            const remaining = matches.length - 3;
+            let html = `<strong>Possible passwords (${matches.length}):</strong><br>`;
+            html += displayMatches.map(w => `<span style="font-size: 1.1em; font-weight: bold;">${w.toUpperCase()}</span>`).join(', ');
+            if (remaining > 0) {
+                html += ` <span style="color: #999;">+${remaining} more</span>`;
+            }
+            solutionBox.innerHTML = html;
+            solutionBox.className = 'solution-box';
         }
     }
     
