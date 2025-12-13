@@ -1421,4 +1421,198 @@ h1 {
     line-height: 1.6;
 }
 
+/* ==================== KEYPADS MODULE ==================== */
+
+.keypads-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.keypads-instructions {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.keypads-selected {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.selected-symbol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 10px;
+    border: 3px dashed #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 80px;
+}
+
+.selected-symbol.empty {
+    border-color: #ddd;
+    background-color: #f9f9f9;
+}
+
+.selected-symbol.filled {
+    border-style: solid;
+    border-color: #2196f3;
+    background-color: #e3f2fd;
+}
+
+.selected-symbol.filled:hover {
+    border-color: #f44336;
+    background-color: #ffebee;
+}
+
+.selected-symbol .slot-number {
+    font-size: 12px;
+    font-weight: bold;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+.selected-symbol .slot-symbol {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.selected-symbol.empty .slot-symbol {
+    color: #ccc;
+}
+
+.selected-symbol.filled .slot-symbol {
+    color: #1976d2;
+}
+
+.keypads-symbols-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+}
+
+@media (max-width: 600px) {
+    .keypads-symbols-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.keypad-symbol-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    background-color: white;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 75px;
+}
+
+.keypad-symbol-btn:hover {
+    border-color: #2196f3;
+    background-color: #f0f8ff;
+    transform: translateY(-2px);
+}
+
+.keypad-symbol-btn.selected {
+    border-color: #2196f3;
+    background-color: #e3f2fd;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.3);
+}
+
+.keypad-symbol-btn .symbol-display {
+    font-size: 28px;
+    line-height: 1;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.keypad-symbol-btn .symbol-label {
+    font-size: 10px;
+    color: #666;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.keypads-solution {
+    padding: 15px;
+    border-radius: 6px;
+    border: 2px solid #ddd;
+    background-color: #f5f5f5;
+    margin-top: 10px;
+}
+
+.keypads-solution.partial {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+}
+
+.keypads-solution.error {
+    background-color: #ffebee;
+    border-color: #f44336;
+}
+
+.keypads-solution.solved {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.keypads-solution .solution-text {
+    line-height: 1.6;
+}
+
+.press-order-list {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.press-order-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 15px;
+    background-color: white;
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+.press-order-item .press-number {
+    font-size: 12px;
+    font-weight: bold;
+    color: #4caf50;
+    background-color: #e8f5e9;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.press-order-item .press-symbol {
+    font-size: 36px;
+    line-height: 1;
+    color: #2e7d32;
+}
+
+.press-order-item .press-label {
+    font-size: 11px;
+    color: #666;
+    text-align: center;
+}
+
 

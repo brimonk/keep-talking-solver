@@ -148,6 +148,8 @@ document.addEventListener('DOMContentLoaded', function() {
             moduleContent = createMorseCodeModule(moduleCounter);
         } else if (moduleName === 'Complicated Wires') {
             moduleContent = createComplicatedWiresModule(moduleCounter);
+        } else if (moduleName === 'Keypads') {
+            moduleContent = createKeypadsModule(moduleCounter);
         } else {
             moduleContent = `
                 <button class="toggle-btn" onclick="toggleModule(${moduleCounter})" title="Minimize module">▲</button>
@@ -182,6 +184,8 @@ document.addEventListener('DOMContentLoaded', function() {
             setupMorseCodeModule(moduleCounter);
         } else if (moduleName === 'Complicated Wires') {
             setupComplicatedWiresModule(moduleCounter);
+        } else if (moduleName === 'Keypads') {
+            setupKeypadsModule(moduleCounter);
         }
     }
     
@@ -1895,6 +1899,254 @@ function solveWhosOnFirst(moduleId) {
     `;
     solutionDiv.className = 'whos-solution solved';
 }
+
+
+// ==================== KEYPADS MODULE ====================
+
+// Symbol definitions with Unicode/visual representations
+const KEYPAD_SYMBOLS = {
+    BALLOON: { id: 'BALLOON', display: '🎈', label: 'Balloon' },
+    AT: { id: 'AT', display: '@', label: 'AT' },
+    LAMBDA: { id: 'LAMBDA', display: 'λ', label: 'Lambda' },
+    LIGHTNING: { id: 'LIGHTNING', display: '⚡', label: 'Lightning' },
+    NUKE: { id: 'NUKE', display: '☢', label: 'Nuke' },
+    HK: { id: 'HK', display: 'Ҩ', label: 'Swirl' },
+    SQUIGGLE: { id: 'SQUIGGLE', display: '~', label: 'Squiggle' },
+    BACKWARDS_C: { id: 'BACKWARDS_C', display: 'Ɔ', label: 'Backwards C' },
+    SMILEY: { id: 'SMILEY', display: '🙂', label: 'Smiley' },
+    C_WITH_DOT: { id: 'C_WITH_DOT', display: 'Ċ', label: 'C with Dot' },
+    QUESTION_MARK: { id: 'QUESTION_MARK', display: '?', label: 'Question Mark' },
+    COPYRIGHT: { id: 'COPYRIGHT', display: '©', label: 'Copyright' },
+    SIX: { id: 'SIX', display: '6', label: 'Six' },
+    PARAGRAPH: { id: 'PARAGRAPH', display: '¶', label: 'Paragraph' },
+    BT: { id: 'BT', display: 'bT', label: 'B/T' },
+    STAR_OUTLINE: { id: 'STAR_OUTLINE', display: '☆', label: 'Star (outline)' },
+    AE: { id: 'AE', display: 'Æ', label: 'AE' },
+    PSI: { id: 'PSI', display: 'Ψ', label: 'Psi' },
+    OMEGA: { id: 'OMEGA', display: 'Ω', label: 'Omega' },
+    UPSIDE_DOWN_QUESTION: { id: 'UPSIDE_DOWN_QUESTION', display: '¿', label: 'Upside-down ?' },
+    BLACK_STAR: { id: 'BLACK_STAR', display: '★', label: 'Star (filled)' },
+    EPSILON: { id: 'EPSILON', display: 'ɜ̈', label: '3' },
+    TV_THREE: { id: 'TV_THREE', display: '3̂ ', label: 'TV 3' },
+    K_REVERSED: { id: 'K_REVERSED', display: 'Ж', label: 'K (reversed)' },
+    HASH: { id: 'HASH', display: '#', label: 'Hash' },
+    NOSE: { id: 'NOSE', display: '👃', label: 'Nose' },
+    BACKWARDS_N: { id: 'BACKWARDS_N', display: 'И', label: 'Backwards N' },
+    CURLY_H: { id: 'CURLY_H', display: 'Ҥ', label: 'Curly H' },
+};
+
+// Six predefined columns (authoritative)
+const KEYPAD_COLUMNS = [
+    // Column 1
+    ['BALLOON', 'AT', 'LAMBDA', 'LIGHTNING', 'NUKE', 'CURLY_H', 'BACKWARDS_C'],
+    // Column 2 todo
+    ['EPSILON', 'BALLOON', 'BACKWARDS_C', 'HK', 'STAR_OUTLINE', 'CURLY_H', 'UPSIDE_DOWN_QUESTION'],
+    // Column 3
+    ['COPYRIGHT', 'NOSE', 'HK', 'K_REVERSED', 'SQUIGGLE', 'LAMBDA', 'STAR_OUTLINE'],
+    // Column 4
+    ['SIX', 'PARAGRAPH', 'BT', 'NUKE', 'K_REVERSED', 'UPSIDE_DOWN_QUESTION', 'SMILEY'],
+    // Column 5
+    ['PSI', 'SMILEY', 'BT', 'C_WITH_DOT', 'PARAGRAPH', 'TV_THREE', 'BLACK_STAR'],
+    // Column 6
+    ['SIX', 'EPSILON', 'HASH', 'AE', 'PSI', 'BACKWARDS_N', 'OMEGA']
+];
+
+function createKeypadsModule(moduleId) {
+    // Create symbol buttons (sorted alphabetically for easier selection)
+    const sortedSymbols = Object.values(KEYPAD_SYMBOLS).sort((a, b) => a.label.localeCompare(b.label));
+    
+    const symbolButtons = sortedSymbols.map(symbol => 
+        `<button class="keypad-symbol-btn" data-symbol="${symbol.id}" title="${symbol.label}">
+            <span class="symbol-display">${symbol.display}</span>
+            <span class="symbol-label">${symbol.label}</span>
+        </button>`
+    ).join('');
+    
+    return `
+        <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+        <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
+        <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
+        <h3>Keypads</h3>
+        <div class="module-content">
+            <div class="keypads-controls">
+                <div class="keypads-instructions">
+                    <strong>Select the 4 symbols shown on the keypad:</strong>
+                </div>
+                
+                <div class="keypads-selected" id="keypads-selected-${moduleId}">
+                    <div class="selected-symbol empty" data-slot="0">
+                        <span class="slot-number">1</span>
+                        <span class="slot-symbol">?</span>
+                    </div>
+                    <div class="selected-symbol empty" data-slot="1">
+                        <span class="slot-number">2</span>
+                        <span class="slot-symbol">?</span>
+                    </div>
+                    <div class="selected-symbol empty" data-slot="2">
+                        <span class="slot-number">3</span>
+                        <span class="slot-symbol">?</span>
+                    </div>
+                    <div class="selected-symbol empty" data-slot="3">
+                        <span class="slot-number">4</span>
+                        <span class="slot-symbol">?</span>
+                    </div>
+                </div>
+                
+                <div class="keypads-symbols-grid">
+                    ${symbolButtons}
+                </div>
+                
+                <div class="keypads-solution" id="keypads-solution-${moduleId}">
+                    <div class="solution-text">Select 4 symbols from the keypad</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function setupKeypadsModule(moduleId) {
+    const moduleCard = document.getElementById(`module-${moduleId}`);
+    const symbolButtons = moduleCard.querySelectorAll('.keypad-symbol-btn');
+    const selectedSlots = moduleCard.querySelectorAll('.selected-symbol');
+    
+    // Track selected symbols
+    const moduleState = {
+        selected: [null, null, null, null],
+        currentSlot: 0
+    };
+    window[`keypadsState_${moduleId}`] = moduleState;
+    
+    // Symbol button click handler
+    symbolButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const symbolId = this.getAttribute('data-symbol');
+            const symbol = KEYPAD_SYMBOLS[symbolId];
+            
+            // Check if symbol is already selected
+            const existingIndex = moduleState.selected.indexOf(symbolId);
+            if (existingIndex !== -1) {
+                // Deselect it
+                moduleState.selected[existingIndex] = null;
+                selectedSlots[existingIndex].classList.add('empty');
+                selectedSlots[existingIndex].classList.remove('filled');
+                selectedSlots[existingIndex].querySelector('.slot-symbol').textContent = '?';
+                selectedSlots[existingIndex].removeAttribute('data-symbol-id');
+                this.classList.remove('selected');
+            } else {
+                // Find first empty slot
+                const emptySlot = moduleState.selected.indexOf(null);
+                if (emptySlot !== -1) {
+                    moduleState.selected[emptySlot] = symbolId;
+                    selectedSlots[emptySlot].classList.remove('empty');
+                    selectedSlots[emptySlot].classList.add('filled');
+                    selectedSlots[emptySlot].querySelector('.slot-symbol').textContent = symbol.display;
+                    selectedSlots[emptySlot].setAttribute('data-symbol-id', symbolId);
+                    this.classList.add('selected');
+                }
+            }
+            
+            solveKeypads(moduleId);
+        });
+    });
+    
+    // Allow clicking on selected symbols to remove them
+    selectedSlots.forEach((slot, index) => {
+        slot.addEventListener('click', function() {
+            const symbolId = moduleState.selected[index];
+            if (symbolId) {
+                // Deselect
+                moduleState.selected[index] = null;
+                this.classList.add('empty');
+                this.classList.remove('filled');
+                this.querySelector('.slot-symbol').textContent = '?';
+                this.removeAttribute('data-symbol-id');
+                
+                // Deselect the button
+                const symbolBtn = moduleCard.querySelector(`[data-symbol="${symbolId}"]`);
+                if (symbolBtn) {
+                    symbolBtn.classList.remove('selected');
+                }
+                
+                solveKeypads(moduleId);
+            }
+        });
+    });
+}
+
+function solveKeypads(moduleId) {
+    const moduleState = window[`keypadsState_${moduleId}`];
+    const solutionDiv = document.getElementById(`keypads-solution-${moduleId}`);
+    const solutionText = solutionDiv.querySelector('.solution-text');
+    
+    // Count how many symbols are selected
+    const selectedSymbols = moduleState.selected.filter(s => s !== null);
+    
+    if (selectedSymbols.length === 0) {
+        solutionText.innerHTML = 'Select 4 symbols from the keypad';
+        solutionDiv.className = 'keypads-solution';
+        return;
+    }
+    
+    if (selectedSymbols.length < 4) {
+        solutionText.innerHTML = `Selected ${selectedSymbols.length}/4 symbols. Select ${4 - selectedSymbols.length} more.`;
+        solutionDiv.className = 'keypads-solution partial';
+        return;
+    }
+    
+    // All 4 symbols selected - find matching column
+    let matchingColumn = -1;
+    let matchingColumnSymbols = null;
+    
+    for (let colIndex = 0; colIndex < KEYPAD_COLUMNS.length; colIndex++) {
+        const column = KEYPAD_COLUMNS[colIndex];
+        // Check if all 4 selected symbols are in this column
+        const allMatch = selectedSymbols.every(symbolId => column.includes(symbolId));
+        
+        if (allMatch) {
+            matchingColumn = colIndex;
+            matchingColumnSymbols = column;
+            break;
+        }
+    }
+    
+    if (matchingColumn === -1) {
+        solutionText.innerHTML = '❌ Error: No column contains all 4 symbols.<br><span style="font-size: 0.9em; color: #999;">Check your selections.</span>';
+        solutionDiv.className = 'keypads-solution error';
+        return;
+    }
+    
+    // Determine press order based on column order
+    const pressOrder = [];
+    for (const symbolId of matchingColumnSymbols) {
+        if (selectedSymbols.includes(symbolId)) {
+            pressOrder.push(symbolId);
+        }
+    }
+    
+    // Generate solution display
+    const orderDisplay = pressOrder.map((symbolId, index) => {
+        const symbol = KEYPAD_SYMBOLS[symbolId];
+        return `<span class="press-order-item">
+            <span class="press-number">${index + 1}</span>
+            <span class="press-symbol">${symbol.display}</span>
+            <span class="press-label">${symbol.label}</span>
+        </span>`;
+    }).join('');
+    
+    solutionText.innerHTML = `
+        <div style="margin-bottom: 10px;">
+            ✅ All symbols appear in <strong>Column ${matchingColumn + 1}</strong>
+        </div>
+        <div style="font-size: 0.95em; color: #555; margin-bottom: 12px;">
+            Press in this order (top to bottom in column):
+        </div>
+        <div class="press-order-list">
+            ${orderDisplay}
+        </div>
+    `;
+    solutionDiv.className = 'keypads-solution solved';
+}
+
 
 
 
