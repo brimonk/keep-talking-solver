@@ -1328,3 +1328,97 @@ h1 {
     font-style: italic;
 }
 
+/* ==================== WHO'S ON FIRST MODULE ==================== */
+
+.whos-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.whos-display-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.whos-display-text {
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.whos-display-text:focus {
+    outline: none;
+    border-color: #2196f3;
+}
+
+.whos-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 600px) {
+    .whos-buttons-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.whos-button-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.whos-button-input label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #555;
+}
+
+.whos-button-label {
+    padding: 10px;
+    font-size: 14px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.whos-button-label:focus {
+    outline: none;
+    border-color: #2196f3;
+}
+
+.whos-solution {
+    padding: 15px;
+    border-radius: 6px;
+    border: 2px solid #ddd;
+    background-color: #f5f5f5;
+    margin-top: 10px;
+}
+
+.whos-solution.partial {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+}
+
+.whos-solution.error {
+    background-color: #ffebee;
+    border-color: #f44336;
+}
+
+.whos-solution.solved {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.whos-solution .solution-text {
+    line-height: 1.6;
+}
+
+

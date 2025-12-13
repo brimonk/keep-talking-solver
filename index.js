@@ -140,6 +140,8 @@ document.addEventListener('DOMContentLoaded', function() {
             moduleContent = createSequentialWiresModule(moduleCounter);
         } else if (moduleName === 'Simon Says') {
             moduleContent = createSimonSaysModule(moduleCounter);
+        } else if (moduleName === "Who's on First") {
+            moduleContent = createWhosOnFirstModule(moduleCounter);
         } else if (moduleName === 'Memory') {
             moduleContent = createMemoryModule(moduleCounter);
         } else if (moduleName === 'Morse Code') {
@@ -172,6 +174,8 @@ document.addEventListener('DOMContentLoaded', function() {
             setupSequentialWiresModule(moduleCounter);
         } else if (moduleName === 'Simon Says') {
             setupSimonSaysModule(moduleCounter);
+        } else if (moduleName === "Who's on First") {
+            setupWhosOnFirstModule(moduleCounter);
         } else if (moduleName === 'Memory') {
             setupMemoryModule(moduleCounter);
         } else if (moduleName === 'Morse Code') {
@@ -1666,6 +1670,231 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Battery count is now handled in the main DOMContentLoaded listener above
 });
+
+
+// ==================== WHO'S ON FIRST MODULE ====================
+
+// Display to position mapping
+const WHOS_DISPLAY_MAP = {
+    'YES': 'middleLeft',
+    'FIRST': 'topRight',
+    'DISPLAY': 'bottomRight',
+    'OKAY': 'topRight',
+    'SAYS': 'bottomRight',
+    'NOTHING': 'middleLeft',
+    '': 'bottomLeft',  // blank display
+    'BLANK': 'middleRight',
+    'NO': 'bottomRight',
+    'LED': 'middleLeft',
+    'LEAD': 'bottomRight',
+    'READ': 'middleRight',
+    'RED': 'middleRight',
+    'REED': 'bottomLeft',
+    'LEED': 'bottomLeft',
+    'HOLD ON': 'bottomRight',
+    'YOU': 'middleRight',
+    'YOU ARE': 'bottomRight',
+    'YOUR': 'middleRight',
+    "YOU'RE": 'middleRight',
+    'UR': 'topLeft',
+    'THERE': 'bottomRight',
+    "THEY'RE": 'bottomLeft',
+    'THEIR': 'middleRight',
+    'THEY ARE': 'bottomLeft',
+    'SEE': 'bottomRight',
+    'C': 'topRight',
+    'CEE': 'bottomRight'
+};
+
+// Label priority lists
+const WHOS_PRIORITY_LISTS = {
+    'READY': ['YES', 'OKAY', 'WHAT', 'MIDDLE', 'LEFT', 'PRESS', 'RIGHT', 'BLANK', 'READY', 'NO', 'FIRST', 'UHHH', 'NOTHING', 'WAIT'],
+    'FIRST': ['LEFT', 'OKAY', 'YES', 'MIDDLE', 'NO', 'RIGHT', 'NOTHING', 'UHHH', 'WAIT', 'READY', 'BLANK', 'WHAT', 'PRESS', 'FIRST'],
+    'NO': ['BLANK', 'UHHH', 'WAIT', 'FIRST', 'WHAT', 'READY', 'RIGHT', 'YES', 'NOTHING', 'LEFT', 'PRESS', 'OKAY', 'NO', 'MIDDLE'],
+    'BLANK': ['WAIT', 'RIGHT', 'OKAY', 'MIDDLE', 'BLANK', 'PRESS', 'READY', 'NOTHING', 'NO', 'WHAT', 'LEFT', 'UHHH', 'YES', 'FIRST'],
+    'NOTHING': ['UHHH', 'RIGHT', 'OKAY', 'MIDDLE', 'YES', 'BLANK', 'NO', 'PRESS', 'LEFT', 'WHAT', 'WAIT', 'FIRST', 'NOTHING', 'READY'],
+    'YES': ['OKAY', 'RIGHT', 'UHHH', 'MIDDLE', 'FIRST', 'WHAT', 'PRESS', 'READY', 'NOTHING', 'YES', 'LEFT', 'BLANK', 'NO', 'WAIT'],
+    'WHAT': ['UHHH', 'WHAT', 'LEFT', 'NOTHING', 'READY', 'BLANK', 'MIDDLE', 'NO', 'OKAY', 'FIRST', 'WAIT', 'YES', 'PRESS', 'RIGHT'],
+    'UHHH': ['READY', 'NOTHING', 'LEFT', 'WHAT', 'OKAY', 'YES', 'RIGHT', 'NO', 'PRESS', 'BLANK', 'UHHH', 'MIDDLE', 'WAIT', 'FIRST'],
+    'LEFT': ['RIGHT', 'LEFT', 'FIRST', 'NO', 'MIDDLE', 'YES', 'BLANK', 'WHAT', 'UHHH', 'WAIT', 'PRESS', 'READY', 'OKAY', 'NOTHING'],
+    'RIGHT': ['YES', 'NOTHING', 'READY', 'PRESS', 'NO', 'WAIT', 'WHAT', 'RIGHT', 'MIDDLE', 'LEFT', 'UHHH', 'BLANK', 'OKAY', 'FIRST'],
+    'MIDDLE': ['BLANK', 'READY', 'OKAY', 'WHAT', 'NOTHING', 'PRESS', 'NO', 'WAIT', 'LEFT', 'MIDDLE', 'RIGHT', 'FIRST', 'UHHH', 'YES'],
+    'OKAY': ['MIDDLE', 'NO', 'FIRST', 'YES', 'UHHH', 'NOTHING', 'WAIT', 'OKAY', 'LEFT', 'READY', 'BLANK', 'PRESS', 'WHAT', 'RIGHT'],
+    'WAIT': ['UHHH', 'NO', 'BLANK', 'OKAY', 'YES', 'LEFT', 'FIRST', 'PRESS', 'WHAT', 'WAIT', 'NOTHING', 'READY', 'RIGHT', 'MIDDLE'],
+    'PRESS': ['RIGHT', 'MIDDLE', 'YES', 'READY', 'PRESS', 'OKAY', 'NOTHING', 'UHHH', 'BLANK', 'LEFT', 'FIRST', 'WHAT', 'NO', 'WAIT'],
+    'YOU': ['SURE', 'YOU ARE', 'YOUR', "YOU'RE", 'NEXT', 'UH HUH', 'UR', 'HOLD', 'WHAT?', 'YOU', 'UH UH', 'LIKE', 'DONE', 'U'],
+    'YOU ARE': ['YOUR', 'NEXT', 'LIKE', 'UH HUH', 'WHAT?', 'DONE', 'UH UH', 'HOLD', 'YOU', 'U', "YOU'RE", 'SURE', 'UR', 'YOU ARE'],
+    'YOUR': ['UH UH', 'YOU ARE', 'UH HUH', 'YOUR', 'NEXT', 'UR', 'SURE', 'U', "YOU'RE", 'YOU', 'WHAT?', 'HOLD', 'LIKE', 'DONE'],
+    "YOU'RE": ['YOU', "YOU'RE", 'UR', 'NEXT', 'UH UH', 'YOU ARE', 'U', 'YOUR', 'WHAT?', 'UH HUH', 'SURE', 'DONE', 'LIKE', 'HOLD'],
+    'UR': ['DONE', 'U', 'UR', 'UH HUH', 'WHAT?', 'SURE', 'YOUR', 'HOLD', "YOU'RE", 'LIKE', 'NEXT', 'UH UH', 'YOU ARE', 'YOU'],
+    'U': ['UH HUH', 'SURE', 'NEXT', 'WHAT?', "YOU'RE", 'UR', 'UH UH', 'DONE', 'U', 'YOU', 'LIKE', 'HOLD', 'YOU ARE', 'YOUR'],
+    'UH HUH': ['UH HUH', 'YOUR', 'YOU ARE', 'YOU', 'DONE', 'HOLD', 'UH UH', 'NEXT', 'SURE', 'LIKE', "YOU'RE", 'UR', 'U', 'WHAT?'],
+    'UH UH': ['UR', 'U', 'YOU ARE', "YOU'RE", 'NEXT', 'UH UH', 'DONE', 'YOU', 'UH HUH', 'LIKE', 'YOUR', 'SURE', 'HOLD', 'WHAT?'],
+    'WHAT?': ['YOU', 'HOLD', "YOU'RE", 'YOUR', 'U', 'DONE', 'UH UH', 'LIKE', 'YOU ARE', 'UH HUH', 'UR', 'NEXT', 'WHAT?', 'SURE'],
+    'DONE': ['SURE', 'UH HUH', 'NEXT', 'WHAT?', 'YOUR', 'UR', "YOU'RE", 'HOLD', 'LIKE', 'YOU', 'U', 'YOU ARE', 'UH UH', 'DONE'],
+    'NEXT': ['WHAT?', 'UH HUH', 'UH UH', 'YOUR', 'HOLD', 'SURE', 'NEXT', 'LIKE', 'DONE', 'YOU ARE', 'UR', "YOU'RE", 'U', 'YOU'],
+    'HOLD': ['YOU ARE', 'U', 'DONE', 'UH UH', 'YOU', 'UR', 'SURE', 'WHAT?', "YOU'RE", 'NEXT', 'HOLD', 'UH HUH', 'YOUR', 'LIKE'],
+    'SURE': ['YOU ARE', 'DONE', 'LIKE', "YOU'RE", 'YOU', 'HOLD', 'UH HUH', 'UR', 'SURE', 'U', 'WHAT?', 'NEXT', 'YOUR', 'UH UH'],
+    'LIKE': ["YOU'RE", 'NEXT', 'U', 'UR', 'HOLD', 'DONE', 'UH UH', 'WHAT?', 'UH HUH', 'YOU', 'LIKE', 'SURE', 'YOU ARE', 'YOUR']
+};
+
+const POSITION_NAMES = {
+    'topLeft': 'Top Left',
+    'topRight': 'Top Right',
+    'middleLeft': 'Middle Left',
+    'middleRight': 'Middle Right',
+    'bottomLeft': 'Bottom Left',
+    'bottomRight': 'Bottom Right'
+};
+
+function createWhosOnFirstModule(moduleId) {
+    return `
+        <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+        <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
+        <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
+        <h3>Who's on First</h3>
+        <div class="module-content">
+            <div class="whos-controls">
+                <div class="whos-display-input">
+                    <label for="whos-display-${moduleId}"><strong>Display shows:</strong></label>
+                    <input type="text" id="whos-display-${moduleId}" class="whos-display-text" placeholder="Enter display text" autocomplete="off">
+                </div>
+                
+                <div class="whos-buttons-grid">
+                    <div class="whos-button-input">
+                        <label>Top Left:</label>
+                        <input type="text" id="whos-topLeft-${moduleId}" class="whos-button-label" data-position="topLeft" autocomplete="off">
+                    </div>
+                    <div class="whos-button-input">
+                        <label>Top Right:</label>
+                        <input type="text" id="whos-topRight-${moduleId}" class="whos-button-label" data-position="topRight" autocomplete="off">
+                    </div>
+                    <div class="whos-button-input">
+                        <label>Middle Left:</label>
+                        <input type="text" id="whos-middleLeft-${moduleId}" class="whos-button-label" data-position="middleLeft" autocomplete="off">
+                    </div>
+                    <div class="whos-button-input">
+                        <label>Middle Right:</label>
+                        <input type="text" id="whos-middleRight-${moduleId}" class="whos-button-label" data-position="middleRight" autocomplete="off">
+                    </div>
+                    <div class="whos-button-input">
+                        <label>Bottom Left:</label>
+                        <input type="text" id="whos-bottomLeft-${moduleId}" class="whos-button-label" data-position="bottomLeft" autocomplete="off">
+                    </div>
+                    <div class="whos-button-input">
+                        <label>Bottom Right:</label>
+                        <input type="text" id="whos-bottomRight-${moduleId}" class="whos-button-label" data-position="bottomRight" autocomplete="off">
+                    </div>
+                </div>
+                
+                <div class="whos-solution" id="whos-solution-${moduleId}">
+                    <div class="solution-text">Enter display text and button labels</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function setupWhosOnFirstModule(moduleId) {
+    const displayInput = document.getElementById(`whos-display-${moduleId}`);
+    const buttonInputs = document.querySelectorAll(`#module-${moduleId} .whos-button-label`);
+    
+    // Add event listeners
+    displayInput.addEventListener('input', () => solveWhosOnFirst(moduleId));
+    buttonInputs.forEach(input => {
+        input.addEventListener('input', () => solveWhosOnFirst(moduleId));
+    });
+}
+
+function solveWhosOnFirst(moduleId) {
+    const displayInput = document.getElementById(`whos-display-${moduleId}`);
+    const solutionDiv = document.getElementById(`whos-solution-${moduleId}`);
+    const solutionText = solutionDiv.querySelector('.solution-text');
+    
+    const displayText = displayInput.value.trim().toUpperCase();
+    
+    // Check if display text is valid
+    if (!displayText) {
+        solutionText.innerHTML = 'Enter display text and button labels';
+        solutionDiv.className = 'whos-solution';
+        return;
+    }
+    
+    // Step 1: Determine which button to read
+    const positionToRead = WHOS_DISPLAY_MAP[displayText];
+    
+    if (!positionToRead) {
+        solutionText.innerHTML = `❌ Unknown display text: "${displayText}"`;
+        solutionDiv.className = 'whos-solution error';
+        return;
+    }
+    
+    // Step 2: Read the label from that position
+    const labelInput = document.getElementById(`whos-${positionToRead}-${moduleId}`);
+    const labelToUse = labelInput.value.trim().toUpperCase();
+    
+    if (!labelToUse) {
+        solutionText.innerHTML = `Step 1: Read <strong>${POSITION_NAMES[positionToRead]}</strong> button<br><span style="color: #999;">Enter the label on that button to continue</span>`;
+        solutionDiv.className = 'whos-solution partial';
+        return;
+    }
+    
+    // Step 3: Get the priority list for that label
+    const priorityList = WHOS_PRIORITY_LISTS[labelToUse];
+    
+    if (!priorityList) {
+        solutionText.innerHTML = `Step 1: Read <strong>${POSITION_NAMES[positionToRead]}</strong> → "${labelToUse}"<br>❌ Unknown label: "${labelToUse}"`;
+        solutionDiv.className = 'whos-solution error';
+        return;
+    }
+    
+    // Step 4: Find the first matching button in reading order
+    const positions = ['topLeft', 'topRight', 'middleLeft', 'middleRight', 'bottomLeft', 'bottomRight'];
+    const buttonLabels = {};
+    
+    for (const pos of positions) {
+        const input = document.getElementById(`whos-${pos}-${moduleId}`);
+        buttonLabels[pos] = input.value.trim().toUpperCase();
+    }
+    
+    // Find first matching button
+    let buttonToPress = null;
+    let matchedLabel = null;
+    
+    for (const pos of positions) {
+        const label = buttonLabels[pos];
+        if (label && priorityList.includes(label)) {
+            buttonToPress = pos;
+            matchedLabel = label;
+            break;
+        }
+    }
+    
+    if (!buttonToPress) {
+        solutionText.innerHTML = `Step 1: Read <strong>${POSITION_NAMES[positionToRead]}</strong> → "${labelToUse}"<br>
+            <span style="color: #999;">Using "${labelToUse}" priority list</span><br>
+            ❌ No matching buttons found. Check button labels.`;
+        solutionDiv.className = 'whos-solution error';
+        return;
+    }
+    
+    // Success! Show the solution
+    solutionText.innerHTML = `
+        <div style="margin-bottom: 8px;">
+            <strong>Step 1:</strong> Display "${displayText}" → Read <strong>${POSITION_NAMES[positionToRead]}</strong>
+        </div>
+        <div style="margin-bottom: 8px;">
+            <strong>Step 2:</strong> Label is "<strong>${labelToUse}</strong>"
+        </div>
+        <div style="margin-bottom: 8px;">
+            <strong>Step 3:</strong> Using "${labelToUse}" priority list
+        </div>
+        <div style="font-size: 1.2em; padding: 10px; background: #e8f5e9; border-radius: 4px; margin-top: 10px;">
+            ✅ Press <strong>${POSITION_NAMES[buttonToPress]}</strong> (${matchedLabel})
+        </div>
+    `;
+    solutionDiv.className = 'whos-solution solved';
+}
 
 
 
