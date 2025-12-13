@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
             moduleContent = createMemoryModule(moduleCounter);
         } else if (moduleName === 'Morse Code') {
             moduleContent = createMorseCodeModule(moduleCounter);
+        } else if (moduleName === 'Complicated Wires') {
+            moduleContent = createComplicatedWiresModule(moduleCounter);
         } else {
             moduleContent = `
                 <button class="toggle-btn" onclick="toggleModule(${moduleCounter})" title="Minimize module">▲</button>
@@ -89,6 +91,8 @@ document.addEventListener('DOMContentLoaded', function() {
             setupMemoryModule(moduleCounter);
         } else if (moduleName === 'Morse Code') {
             setupMorseCodeModule(moduleCounter);
+        } else if (moduleName === 'Complicated Wires') {
+            setupComplicatedWiresModule(moduleCounter);
         }
     }
     
@@ -951,14 +955,14 @@ function solveSimonSays(moduleId) {
     // Define mapping tables
     const mappingWithVowel = {
         0: { red: 'blue', blue: 'red', yellow: 'green', green: 'yellow' },
-        1: { red: 'yellow', blue: 'green', yellow: 'blue', green: 'red' },
-        2: { red: 'green', blue: 'red', yellow: 'yellow', green: 'blue' }
+        1: { red: 'yellow', blue: 'green', yellow: 'red', green: 'blue' },
+        2: { red: 'green', blue: 'red', yellow: 'blue', green: 'yellow' }
     };
     
     const mappingWithoutVowel = {
-        0: { red: 'blue', blue: 'yellow', yellow: 'green', green: 'red' },
-        1: { red: 'red', blue: 'blue', yellow: 'yellow', green: 'green' },
-        2: { red: 'yellow', blue: 'green', yellow: 'blue', green: 'red' }
+        0: { red: 'blue', blue: 'yellow', yellow: 'red', green: 'green' },
+        1: { red: 'red', blue: 'blue', yellow: 'green', green: 'yellow' },
+        2: { red: 'yellow', blue: 'green', yellow: 'red', green: 'blue' }
     };
     
     if (hasVowel === 'unknown') {
@@ -1360,7 +1364,13 @@ function updateMorseDisplay(moduleId) {
     } else if (finalWord) {
         // Check for partial matches
         const matches = Object.keys(MORSE_WORDS).filter(w => w.startsWith(finalWord));
-        if (matches.length > 0) {
+        if (matches.length === 1) {
+            // Only one possible answer - show it with the frequency
+            solutionText.innerHTML = `<strong>${MORSE_WORDS[matches[0]]} MHz</strong>`;
+            solutionText.style.color = '#000';
+            solutionDiv.style.backgroundColor = '#e8f5e9';
+            solutionDiv.style.borderColor = '#4caf50';
+        } else if (matches.length > 1) {
             solutionText.textContent = `Possible: ${matches.join(', ')}`;
             solutionText.style.color = '#666';
             solutionDiv.style.backgroundColor = '#fff3cd';
@@ -1378,4 +1388,268 @@ function updateMorseDisplay(moduleId) {
         solutionDiv.style.borderColor = '#ddd';
     }
 }
+
+
+// ==================== COMPLICATED WIRES MODULE ====================
+
+function createComplicatedWiresModule(moduleId) {
+    return `
+        <button class="toggle-btn" onclick="toggleModule(${moduleId})" title="Minimize module">▲</button>
+        <button class="complete-btn" onclick="completeModule(${moduleId})" title="Mark as complete">✓</button>
+        <button class="close-btn" onclick="removeModule(${moduleId})" title="Remove module">×</button>
+        <h3>Complicated Wires</h3>
+        <div class="module-content">
+            <div class="complicated-wires-controls">
+                <button class="add-wire-btn" id="add-wire-btn-${moduleId}">+ Add Wire</button>
+            </div>
+            <div class="complicated-wires-list" id="complicated-wires-list-${moduleId}">
+                <div class="no-wires-message">Click "Add Wire" to begin</div>
+            </div>
+        </div>
+    `;
+}
+
+function setupComplicatedWiresModule(moduleId) {
+    const wiresList = document.getElementById(`complicated-wires-list-${moduleId}`);
+    const addWireBtn = document.getElementById(`add-wire-btn-${moduleId}`);
+    let wires = []; // Array to store wire objects
+    let wireIdCounter = 0;
+    
+    addWireBtn.addEventListener('click', function() {
+        addWire();
+    });
+    
+    function addWire() {
+        wireIdCounter++;
+        const wireId = wireIdCounter;
+        const wire = {
+            id: wireId,
+            hasRed: false,
+            hasBlue: false,
+            hasStar: false,
+            ledOn: false
+        };
+        wires.unshift(wire); // Add to the beginning of the array
+        updateWiresList();
+    }
+    
+    function removeWire(wireId) {
+        wires = wires.filter(w => w.id !== wireId);
+        updateWiresList();
+    }
+    
+    function updateWire(wireId, property, value) {
+        const wire = wires.find(w => w.id === wireId);
+        if (wire) {
+            wire[property] = value;
+            updateWiresList();
+        }
+    }
+    
+    function updateWiresList() {
+        if (wires.length === 0) {
+            wiresList.innerHTML = '<div class="no-wires-message">Click "Add Wire" to begin</div>';
+            return;
+        }
+        
+        wiresList.innerHTML = '';
+        wires.forEach((wire, index) => {
+            const wireDiv = document.createElement('div');
+            wireDiv.className = 'complicated-wire-item';
+            
+            const result = evaluateComplicatedWire(wire);
+            const resultClass = result.shouldCut ? 'cut-decision' : 'no-cut-decision';
+            
+            wireDiv.innerHTML = `
+                <div class="wire-header">
+                    <span class="wire-number">Wire ${index + 1}</span>
+                    <button class="remove-wire-btn" data-wire-id="${wire.id}">×</button>
+                </div>
+                <div class="wire-attributes">
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="wire-checkbox" data-wire-id="${wire.id}" data-property="hasRed" ${wire.hasRed ? 'checked' : ''}>
+                        <span class="checkbox-text red-text">Red</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="wire-checkbox" data-wire-id="${wire.id}" data-property="hasBlue" ${wire.hasBlue ? 'checked' : ''}>
+                        <span class="checkbox-text blue-text">Blue</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="wire-checkbox" data-wire-id="${wire.id}" data-property="hasStar" ${wire.hasStar ? 'checked' : ''}>
+                        <span class="checkbox-text">★ Star</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="wire-checkbox" data-wire-id="${wire.id}" data-property="ledOn" ${wire.ledOn ? 'checked' : ''}>
+                        <span class="checkbox-text">💡 LED On</span>
+                    </label>
+                </div>
+                <div class="wire-result ${resultClass}">
+                    <div class="result-instruction">Instruction: <strong>${result.instruction}</strong></div>
+                    <div class="result-decision"><strong>${result.shouldCut ? 'CUT' : 'DO NOT CUT'}</strong></div>
+                    <div class="result-explanation">${result.explanation}</div>
+                </div>
+            `;
+            wiresList.prepend(wireDiv); // Add to the top of the list
+        });
+        
+        // Add event listeners
+        wiresList.querySelectorAll('.remove-wire-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const wireId = parseInt(this.getAttribute('data-wire-id'));
+                removeWire(wireId);
+            });
+        });
+        
+        wiresList.querySelectorAll('.wire-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const wireId = parseInt(this.getAttribute('data-wire-id'));
+                const property = this.getAttribute('data-property');
+                updateWire(wireId, property, this.checked);
+            });
+        });
+    }
+    
+    // Store reference for potential updates from bomb-level inputs
+    window[`updateComplicatedWires_${moduleId}`] = updateWiresList;
+}
+
+// Decision logic for Complicated Wires
+function evaluateComplicatedWire(wire) {
+    // Get bomb-level inputs
+    const evenSerialElement = document.getElementById('even-serial');
+    const parallelPortElement = document.getElementById('parallel-port');
+    const batteryCountElement = document.getElementById('battery-count');
+    
+    const serialState = evenSerialElement.getAttribute('data-state');
+    const parallelState = parallelPortElement.getAttribute('data-state');
+    const batteryCount = parseInt(batteryCountElement.value) || 0;
+    
+    const serialLastDigitEven = serialState === 'true';
+    const hasParallelPort = parallelState === 'true';
+    const hasTwoOrMoreBatteries = batteryCount >= 2;
+    
+    // Determine instruction letter using the authoritative table
+    const instruction = getComplicatedWireInstruction(
+        wire.hasRed,
+        wire.hasBlue,
+        wire.hasStar,
+        wire.ledOn
+    );
+    
+    // Determine if wire should be cut
+    let shouldCut = false;
+    let explanation = '';
+    
+    switch (instruction) {
+        case 'C':
+            shouldCut = true;
+            explanation = 'Instruction C: Always cut the wire.';
+            break;
+        case 'D':
+            shouldCut = false;
+            explanation = 'Instruction D: Do not cut the wire.';
+            break;
+        case 'S':
+            if (serialState === 'unknown') {
+                explanation = 'Instruction S: Need serial number last digit status.';
+                shouldCut = false;
+            } else if (serialLastDigitEven) {
+                shouldCut = true;
+                explanation = 'Instruction S: Cut (serial last digit is even).';
+            } else {
+                shouldCut = false;
+                explanation = 'Instruction S: Do not cut (serial last digit is odd).';
+            }
+            break;
+        case 'P':
+            if (parallelState === 'unknown') {
+                explanation = 'Instruction P: Need parallel port status.';
+                shouldCut = false;
+            } else if (hasParallelPort) {
+                shouldCut = true;
+                explanation = 'Instruction P: Cut (parallel port is present).';
+            } else {
+                shouldCut = false;
+                explanation = 'Instruction P: Do not cut (no parallel port).';
+            }
+            break;
+        case 'B':
+            if (hasTwoOrMoreBatteries) {
+                shouldCut = true;
+                explanation = `Instruction B: Cut (${batteryCount} batteries ≥ 2).`;
+            } else {
+                shouldCut = false;
+                explanation = `Instruction B: Do not cut (${batteryCount} batteries < 2).`;
+            }
+            break;
+    }
+    
+    return {
+        instruction,
+        shouldCut,
+        explanation
+    };
+}
+
+// The authoritative decision table
+function getComplicatedWireInstruction(hasRed, hasBlue, hasStar, ledOn) {
+    // This table is the complete Venn diagram logic
+    // Red, Blue, Star, LED -> Instruction
+    const key = `${hasRed ? 1 : 0}${hasBlue ? 1 : 0}${hasStar ? 1 : 0}${ledOn ? 1 : 0}`;
+    
+    const instructionTable = {
+        '0000': 'C', // no red, no blue, no star, no LED
+        '0001': 'D', // no red, no blue, no star, LED on
+        '0010': 'C', // no red, no blue, star, no LED
+        '0011': 'D', // no red, no blue, star, LED on
+        '0100': 'S', // no red, blue, no star, no LED
+        '0101': 'P', // no red, blue, no star, LED on
+        '0110': 'C', // no red, blue, star, no LED
+        '0111': 'P', // no red, blue, star, LED on
+        '1000': 'S', // red, no blue, no star, no LED
+        '1001': 'B', // red, no blue, no star, LED on
+        '1010': 'C', // red, no blue, star, no LED
+        '1011': 'B', // red, no blue, star, LED on
+        '1100': 'S', // red, blue, no star, no LED
+        '1101': 'S', // red, blue, no star, LED on
+        '1110': 'D', // red, blue, star, no LED
+        '1111': 'D'  // red, blue, star, LED on
+    };
+    
+    return instructionTable[key] || 'C'; // Default to C if somehow invalid
+}
+
+// Add event listeners to bomb-level inputs to update all Complicated Wires modules
+document.addEventListener('DOMContentLoaded', function() {
+    const evenSerialElement = document.getElementById('even-serial');
+    const parallelPortElement = document.getElementById('parallel-port');
+    const batteryCountElement = document.getElementById('battery-count');
+    
+    function updateAllComplicatedWires() {
+        // Find all complicated wires modules and update them
+        for (let i = 1; i <= moduleCounter; i++) {
+            if (window[`updateComplicatedWires_${i}`]) {
+                window[`updateComplicatedWires_${i}`]();
+            }
+        }
+    }
+    
+    if (evenSerialElement) {
+        evenSerialElement.addEventListener('click', function() {
+            setTimeout(updateAllComplicatedWires, 10);
+        });
+    }
+    
+    if (parallelPortElement) {
+        parallelPortElement.addEventListener('click', function() {
+            setTimeout(updateAllComplicatedWires, 10);
+        });
+    }
+    
+    if (batteryCountElement) {
+        batteryCountElement.addEventListener('input', updateAllComplicatedWires);
+        batteryCountElement.addEventListener('change', updateAllComplicatedWires);
+    }
+});
+
 

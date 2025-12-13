@@ -1136,3 +1136,149 @@ h1 {
 .morse-solution .solution-text {
     margin-left: 8px;
 }
+
+/* ==================== COMPLICATED WIRES MODULE ==================== */
+
+.complicated-wires-controls {
+    margin-bottom: 15px;
+}
+
+.add-wire-btn {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.add-wire-btn:hover {
+    background-color: #45a049;
+}
+
+.complicated-wires-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.complicated-wire-item {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    background-color: #f9f9f9;
+    transition: all 0.3s;
+}
+
+.complicated-wire-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.wire-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.wire-number {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+.wire-attributes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+    .wire-attributes {
+        grid-template-columns: 1fr;
+    }
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.checkbox-label:hover {
+    background-color: #e8e8e8;
+}
+
+.wire-checkbox {
+    margin-right: 8px;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.checkbox-text {
+    font-size: 14px;
+    user-select: none;
+}
+
+.red-text {
+    color: #d32f2f;
+    font-weight: bold;
+}
+
+.blue-text {
+    color: #1976d2;
+    font-weight: bold;
+}
+
+.wire-result {
+    padding: 12px;
+    border-radius: 6px;
+    border: 2px solid;
+    margin-top: 10px;
+}
+
+.cut-decision {
+    background-color: #ffebee;
+    border-color: #f44336;
+}
+
+.no-cut-decision {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.result-instruction {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.result-decision {
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.cut-decision .result-decision {
+    color: #d32f2f;
+}
+
+.no-cut-decision .result-decision {
+    color: #2e7d32;
+}
+
+.result-explanation {
+    font-size: 13px;
+    color: #555;
+    font-style: italic;
+}
+
