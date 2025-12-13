@@ -27,6 +27,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Battery counter functionality
+    const batteryCounter = document.getElementById('battery-count');
+    if (batteryCounter) {
+        batteryCounter.addEventListener('click', function() {
+            const currentBatteries = this.getAttribute('data-batteries');
+            let newBatteries;
+            
+            // Cycle through ?, 0, 1, 2+
+            if (currentBatteries === '?') {
+                newBatteries = '0';
+            } else if (currentBatteries === '0') {
+                newBatteries = '1';
+            } else if (currentBatteries === '1') {
+                newBatteries = '2+';
+            } else {
+                newBatteries = '?';
+            }
+            
+            this.setAttribute('data-batteries', newBatteries);
+            this.querySelector('.battery-number').textContent = newBatteries;
+            
+            // Update all Complicated Wires modules when battery count changes
+            for (let i = 1; i <= moduleCounter; i++) {
+                if (window[`updateComplicatedWires_${i}`]) {
+                    window[`updateComplicatedWires_${i}`]();
+                }
+            }
+            
+            // Update all Button modules when battery count changes
+            document.querySelectorAll('[id^="button-solution-"]').forEach(solution => {
+                const moduleId = solution.id.replace('button-solution-', '');
+                const moduleCard = document.getElementById(`module-${moduleId}`);
+                if (moduleCard && moduleCard.querySelector('h3').textContent === 'Button') {
+                    solveButton(moduleId);
+                }
+            });
+        });
+    }
+    
     // Add module when button is clicked
     moduleButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -391,20 +430,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <option value="press">Press</option>
                         </select>
                     </div>
-                    <div class="button-input-group">
-                        <label>Number of Batteries:</label>
-                        <select class="button-select" id="button-batteries-${moduleId}">
-                            <option value="">-- Select --</option>
-                            <option value="0">0</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4+</option>
-                        </select>
-                    </div>
                 </div>
                 <div class="solution-box" id="button-solution-${moduleId}">
-                    Select all button properties to see solution
+                    Select button color and text to see solution
                 </div>
             </div>
         `;
@@ -413,33 +441,46 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupButtonModule(moduleId) {
         const colorSelect = document.getElementById(`button-color-${moduleId}`);
         const textSelect = document.getElementById(`button-text-${moduleId}`);
-        const batteriesSelect = document.getElementById(`button-batteries-${moduleId}`);
         
-        const selects = [colorSelect, textSelect, batteriesSelect];
+        const selects = [colorSelect, textSelect];
         
         selects.forEach(select => {
             select.addEventListener('change', () => solveButton(moduleId));
         });
+        
+        // Solve immediately in case battery counter is already set
+        solveButton(moduleId);
     }
     
     function solveButton(moduleId) {
         const colorSelect = document.getElementById(`button-color-${moduleId}`);
         const textSelect = document.getElementById(`button-text-${moduleId}`);
-        const batteriesSelect = document.getElementById(`button-batteries-${moduleId}`);
         const solutionBox = document.getElementById(`button-solution-${moduleId}`);
         
         const litCar = document.getElementById('lit-car');
         const litFrk = document.getElementById('lit-frk');
+        const batteryCounter = document.getElementById('battery-count');
         
         const color = colorSelect.value;
         const text = textSelect.value;
-        const batteries = parseInt(batteriesSelect.value);
         const carState = litCar.getAttribute('data-state');
         const frkState = litFrk.getAttribute('data-state');
+        const batteryValue = batteryCounter.getAttribute('data-batteries');
+        
+        // Parse battery count from the global counter
+        let batteries = 0;
+        if (batteryValue === '0') {
+            batteries = 0;
+        } else if (batteryValue === '1') {
+            batteries = 1;
+        } else if (batteryValue === '2+') {
+            batteries = 2; // Treat 2+ as 2 for the logic
+        }
+        // If '?', batteries remains 0
         
         // Check if all required fields are selected
-        if (!color || !text || batteriesSelect.value === '') {
-            solutionBox.textContent = 'Select all button properties to see solution';
+        if (!color || !text) {
+            solutionBox.textContent = 'Select button color and text to see solution';
             solutionBox.className = 'solution-box';
             return;
         }
@@ -1522,7 +1563,18 @@ function evaluateComplicatedWire(wire) {
     
     const serialState = evenSerialElement.getAttribute('data-state');
     const parallelState = parallelPortElement.getAttribute('data-state');
-    const batteryCount = parseInt(batteryCountElement.value) || 0;
+    const batteryValue = batteryCountElement.getAttribute('data-batteries');
+    
+    // Parse battery count
+    let batteryCount = 0;
+    if (batteryValue === '0') {
+        batteryCount = 0;
+    } else if (batteryValue === '1') {
+        batteryCount = 1;
+    } else if (batteryValue === '2+') {
+        batteryCount = 2;
+    }
+    // If '?', batteryCount remains 0
     
     const serialLastDigitEven = serialState === 'true';
     const hasParallelPort = parallelState === 'true';
@@ -1646,10 +1698,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    if (batteryCountElement) {
-        batteryCountElement.addEventListener('input', updateAllComplicatedWires);
-        batteryCountElement.addEventListener('change', updateAllComplicatedWires);
-    }
+    // Battery count is now handled in the main DOMContentLoaded listener above
 });
+
+
 
 

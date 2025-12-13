@@ -14,10 +14,10 @@
             <h2>💣 Bomb Info</h2>
             <div class="indicators-grid">
                 <div class="indicator-item">
-                    <button class="tristate-checkbox" id="batteries" data-state="unknown">
-                        <span class="checkbox-icon">?</span>
+                    <button class="battery-counter" id="battery-count" data-batteries="?">
+                        <span class="battery-number">?</span>
                     </button>
-                    <label for="batteries">🔋 2+ Batteries</label>
+                    <label for="battery-count">🔋 Batteries</label>
                 </div>
                 <div class="indicator-item">
                     <button class="tristate-checkbox" id="parallel-port" data-state="unknown">
@@ -54,10 +54,6 @@
                         <span class="strike-number">0</span>
                     </button>
                     <label for="strikes">❌ Strikes</label>
-                </div>
-                <div class="indicator-item">
-                    <input type="number" id="battery-count" min="0" max="10" value="0" style="width: 50px; height: 28px; text-align: center; border: 2px solid #999; border-radius: 4px;">
-                    <label for="battery-count">🔋 Battery Count</label>
                 </div>
             </div>
         </div>
