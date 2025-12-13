@@ -66,6 +66,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Tristate checkbox functionality
+    const tristateCheckboxes = document.querySelectorAll('.tristate-checkbox');
+    tristateCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('click', function() {
+            const currentState = this.getAttribute('data-state');
+            let newState;
+            let newIcon;
+            
+            // Cycle through unknown -> true -> false -> unknown
+            if (currentState === 'unknown') {
+                newState = 'true';
+                newIcon = '✓';
+            } else if (currentState === 'true') {
+                newState = 'false';
+                newIcon = '✗';
+            } else {
+                newState = 'unknown';
+                newIcon = '?';
+            }
+            
+            this.setAttribute('data-state', newState);
+            this.querySelector('.checkbox-icon').textContent = newIcon;
+            
+            // Update modules that depend on these indicators
+            // Update Button modules when CAR or FRK changes
+            if (this.id === 'lit-car' || this.id === 'lit-frk') {
+                document.querySelectorAll('[id^="button-solution-"]').forEach(solution => {
+                    const moduleId = solution.id.replace('button-solution-', '');
+                    const moduleCard = document.getElementById(`module-${moduleId}`);
+                    if (moduleCard && moduleCard.querySelector('h3').textContent === 'Button') {
+                        solveButton(moduleId);
+                    }
+                });
+            }
+            
+            // Update Complicated Wires when serial or parallel port changes
+            if (this.id === 'even-serial' || this.id === 'parallel-port') {
+                for (let i = 1; i <= moduleCounter; i++) {
+                    if (window[`updateComplicatedWires_${i}`]) {
+                        window[`updateComplicatedWires_${i}`]();
+                    }
+                }
+            }
+        });
+    });
+    
     // Add module when button is clicked
     moduleButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -825,86 +871,6 @@ document.addEventListener('DOMContentLoaded', function() {
             updateWiresList();
         });
     }
-    
-    // Store bomb indicators state when they change
-    const batteries = document.getElementById('batteries');
-    const parallelPort = document.getElementById('parallel-port');
-    const evenSerial = document.getElementById('even-serial');
-    const serialVowel = document.getElementById('serial-vowel');
-    const litCar = document.getElementById('lit-car');
-    const litFrk = document.getElementById('lit-frk');
-    
-    const indicators = [batteries, parallelPort, evenSerial, serialVowel, litCar, litFrk];
-    
-    // Setup three-state checkbox behavior
-    indicators.forEach(indicator => {
-        indicator.addEventListener('click', function() {
-            const currentState = this.getAttribute('data-state');
-            let newState, newIcon;
-            
-            // Cycle through states: unknown -> true -> false -> unknown
-            switch(currentState) {
-                case 'unknown':
-                    newState = 'true';
-                    newIcon = '✓';
-                    break;
-                case 'true':
-                    newState = 'false';
-                    newIcon = '✗';
-                    break;
-                case 'false':
-                    newState = 'unknown';
-                    newIcon = '?';
-                    break;
-            }
-            
-            this.setAttribute('data-state', newState);
-            this.querySelector('.checkbox-icon').textContent = newIcon;
-            
-            // Re-solve any active Wires modules when serial number state changes
-            if (this.id === 'even-serial') {
-                document.querySelectorAll('[id^="solution-"]').forEach(solution => {
-                    const moduleId = solution.id.replace('solution-', '');
-                    const moduleCard = document.getElementById(`module-${moduleId}`);
-                    if (moduleCard && moduleCard.querySelector('h3').textContent === 'Wires') {
-                        solveWires(moduleId);
-                    }
-                });
-            }
-            
-            // Re-solve any active Button modules when CAR or FRK state changes
-            if (this.id === 'lit-car' || this.id === 'lit-frk') {
-                document.querySelectorAll('[id^="button-solution-"]').forEach(solution => {
-                    const moduleId = solution.id.replace('button-solution-', '');
-                    const moduleCard = document.getElementById(`module-${moduleId}`);
-                    if (moduleCard && moduleCard.querySelector('h3').textContent === 'Button') {
-                        solveButton(moduleId);
-                    }
-                });
-            }
-            
-            // Re-solve any active Simon Says modules when serial vowel state changes
-            if (this.id === 'serial-vowel') {
-                document.querySelectorAll('[id^="simon-solution-"]').forEach(solution => {
-                    const moduleId = solution.id.replace('simon-solution-', '');
-                    const moduleCard = document.getElementById(`module-${moduleId}`);
-                    if (moduleCard && moduleCard.querySelector('h3').textContent === 'Simon Says') {
-                        solveSimonSays(moduleId);
-                    }
-                });
-            }
-            
-            // Log the current state of all indicators
-            console.log('Bomb indicators updated:', {
-                batteries: batteries.getAttribute('data-state'),
-                parallelPort: parallelPort.getAttribute('data-state'),
-                evenSerial: evenSerial.getAttribute('data-state'),
-                serialVowel: serialVowel.getAttribute('data-state'),
-                litCar: litCar.getAttribute('data-state'),
-                litFrk: litFrk.getAttribute('data-state')
-            });
-        });
-    });
 });
 
 // Simon Says Module Functions
