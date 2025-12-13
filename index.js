@@ -101,6 +101,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
+            // Update Wires modules when serial number changes
+            if (this.id === 'even-serial') {
+                document.querySelectorAll('[id^="solution-"]').forEach(solution => {
+                    const moduleId = solution.id.replace('solution-', '');
+                    const moduleCard = document.getElementById(`module-${moduleId}`);
+                    if (moduleCard && moduleCard.querySelector('h3').textContent === 'Wires') {
+                        solveWires(moduleId);
+                    }
+                });
+            }
+            
             // Update Complicated Wires when serial or parallel port changes
             if (this.id === 'even-serial' || this.id === 'parallel-port') {
                 for (let i = 1; i <= moduleCounter; i++) {
@@ -1372,21 +1383,41 @@ function updateMorseDisplay(moduleId) {
     // Check if word matches
     const finalWord = state.letters.join('').toLowerCase();
     if (finalWord && MORSE_WORDS[finalWord]) {
-        solutionText.innerHTML = `<strong>${MORSE_WORDS[finalWord]} MHz</strong>`;
+        // Exact match
+        solutionText.innerHTML = `<strong>${finalWord.toUpperCase()}: ${MORSE_WORDS[finalWord]} MHz</strong>`;
         solutionText.style.color = '#000';
         solutionDiv.style.backgroundColor = '#e8f5e9';
         solutionDiv.style.borderColor = '#4caf50';
     } else if (finalWord) {
-        // Check for partial matches
-        const matches = Object.keys(MORSE_WORDS).filter(w => w.startsWith(finalWord));
-        if (matches.length === 1) {
-            // Only one possible answer - show it with the frequency
-            solutionText.innerHTML = `<strong>${MORSE_WORDS[matches[0]]} MHz</strong>`;
+        // Check for matches starting with the input (prefix matches)
+        const prefixMatches = Object.keys(MORSE_WORDS).filter(w => w.startsWith(finalWord));
+        
+        // Check for matches containing the input anywhere (substring matches)
+        const substringMatches = Object.keys(MORSE_WORDS).filter(w => w.includes(finalWord));
+        
+        if (prefixMatches.length === 1) {
+            // Only one prefix match - show it with the frequency
+            solutionText.innerHTML = `<strong>${prefixMatches[0].toUpperCase()}: ${MORSE_WORDS[prefixMatches[0]]} MHz</strong>`;
             solutionText.style.color = '#000';
             solutionDiv.style.backgroundColor = '#e8f5e9';
             solutionDiv.style.borderColor = '#4caf50';
-        } else if (matches.length > 1) {
-            solutionText.textContent = `Possible: ${matches.join(', ')}`;
+        } else if (substringMatches.length === 1) {
+            // Only one substring match - show it with the frequency
+            const match = substringMatches[0];
+            const highlightedMatch = match.replace(finalWord, `<u>${finalWord}</u>`);
+            solutionText.innerHTML = `<strong>${highlightedMatch.toUpperCase()}: ${MORSE_WORDS[match]} MHz</strong>`;
+            solutionText.style.color = '#000';
+            solutionDiv.style.backgroundColor = '#e8f5e9';
+            solutionDiv.style.borderColor = '#4caf50';
+        } else if (prefixMatches.length > 1) {
+            // Multiple prefix matches - prioritize these
+            solutionText.textContent = `Possible (from start): ${prefixMatches.join(', ')}`;
+            solutionText.style.color = '#666';
+            solutionDiv.style.backgroundColor = '#fff3cd';
+            solutionDiv.style.borderColor = '#ffc107';
+        } else if (substringMatches.length > 1) {
+            // Multiple substring matches
+            solutionText.textContent = `Possible (contains): ${substringMatches.join(', ')}`;
             solutionText.style.color = '#666';
             solutionDiv.style.backgroundColor = '#fff3cd';
             solutionDiv.style.borderColor = '#ffc107';
